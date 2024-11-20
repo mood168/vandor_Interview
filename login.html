@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登入 | 系統管理</title>
+    <link rel="stylesheet" href="styles/login.css" />
+    <link rel="stylesheet" href="styles/theme.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="login-box">
+        <h1>數網訪廠管理後台</h1>
+        <form method="post" action="login_process.asp">
+          <div class="input-group">
+            <input type="text" id="username" name="username" required />
+            <label for="username">使用者名稱</label>
+          </div>
+
+          <div class="input-group">
+            <input type="password" id="password" name="password" required />
+            <label for="password">密碼</label>
+          </div>
+
+          <button type="submit" class="login-btn">登入</button>
+        </form>
+
+        <div class="forgot-password">
+          <a href="#">忘記密碼？</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.onload = function () {
+        // 載入儲存的主題設定
+        const currentTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", currentTheme);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get("error");
+
+        if (error) {
+          alert(decodeURIComponent(error));
+        }
+      };
+    </script>
+  </body>
+</html>

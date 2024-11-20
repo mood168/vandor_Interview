@@ -1,0 +1,42 @@
+/* 共用的表單樣式 */
+input, select, textarea {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--button-primary);
+    outline: none;
+}
+
+::placeholder {
+    color: var(--text-secondary);
+}
+
+/* 下拉選單特定樣式 */
+select {
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+/* 下拉選單選項樣式 */
+select option {
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    padding: 8px;
+}
+
+/* 按鈕樣式 */
+button {
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    opacity: 0.9;
+} 
