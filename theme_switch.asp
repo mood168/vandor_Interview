@@ -1,11 +1,9 @@
 <!-- 主題切換開關 -->
 <div class="theme-switch-container">
-<br/>
-<span class="theme-text">黑白主題</span>
     <label class="theme-switch">
         <input type="checkbox" id="theme-toggle">        
         <div class="switch-wrapper">            
-            <img class="theme-switch-icon" src="images/day-night.png" width="50" height="50" alt="日/夜切換圖示" class="theme-icon">
+            <span style="vertical-align: middle;">日/夜模式</span> : <img class="theme-switch-icon" style="cursor: pointer; vertical-align: middle;" src="images/day-night.png" width="36" height="36" alt="日/夜切換圖示">
         </div>
     </label>
 </div>
