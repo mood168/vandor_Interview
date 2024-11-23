@@ -282,3 +282,101 @@ input:checked + .slider:before {
     display: flex;
     justify-content: center;
 } 
+
+/* 選單切換按鈕樣式 */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    background: var(--bg-secondary);
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-primary);
+    box-shadow: var(--card-shadow);
+}
+
+/* 遮罩層樣式 */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* 響應式設計 */
+@media (max-width: 770px) {
+    .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        background: var(--bg-secondary);
+        border: none;
+        border-radius: 8px;
+        padding: 8px;
+        cursor: pointer;
+        color: var(--text-primary);
+        box-shadow: var(--card-shadow);
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        height: 100vh;
+        width: 280px;
+        z-index: 999;
+        transition: left 0.3s ease;
+        background-color: var(--bg-secondary);
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .dashboard-container {
+        margin-left: 0;
+    }
+
+    body.menu-open {
+        overflow: hidden;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding-top: 70px;
+        width: 100%;
+    }
+
+    /* 遮罩層樣式 */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+} 
