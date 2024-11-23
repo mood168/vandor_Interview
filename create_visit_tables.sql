@@ -15,7 +15,7 @@ CREATE TABLE [dbo].[VisitAnswers](
     [AnswerID] [int] IDENTITY(1,1) PRIMARY KEY,
     [VisitID] [int] FOREIGN KEY REFERENCES VisitRecords(VisitID),
     [QuestionID] [int] FOREIGN KEY REFERENCES VisitQuestions(QuestionID),
-    [Answer] [nvarchar](max),
+    [Answer] [nvarchar](max) NULL,
     [ModifiedDate] [datetime] DEFAULT GETDATE()
 )
 GO
@@ -87,4 +87,18 @@ INSERT INTO VisitQuestions
 (8, N'配到大智通', 1, 1, 1, NULL, 2, 1),
 (8, N'超取通路', 1, 1, 1, NULL, 3, 1),
 (8, N'新增通路', 1, 1, 1, NULL, 4, 1),
+GO
+
+-- 建立訪廠答案歷史記錄表
+CREATE TABLE [dbo].[VisitAnswerHistory](
+    [HistoryID] [int] IDENTITY(1,1) PRIMARY KEY,
+    [QuestionID] [int] NOT NULL,
+    [VendorID] [int] NOT NULL,
+    [Answer] [nvarchar](500) NOT NULL,
+    [CreatedBy] [int] NOT NULL,
+    [CreatedDate] [datetime] DEFAULT GETDATE(),
+    FOREIGN KEY (QuestionID) REFERENCES VisitQuestions(QuestionID),
+    FOREIGN KEY (VendorID) REFERENCES Vendors(VendorID),
+    FOREIGN KEY (CreatedBy) REFERENCES Users(UserID)
+)
 GO 

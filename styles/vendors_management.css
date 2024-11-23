@@ -44,7 +44,7 @@
 }
 
 .edit-btn {
-    background-color: var(--button-primary);
+    background-color: #b5b5b5;
     color: #fff;
 }
 
@@ -55,7 +55,7 @@
 
 .add-vendor-btn {
     padding: 8px 16px;
-    background-color: var(--button-primary);
+    background-color: #f9c857;
     color: #fff;
     border: none;
     border-radius: 8px;

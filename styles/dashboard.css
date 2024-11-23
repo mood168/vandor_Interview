@@ -41,6 +41,8 @@ body {
     background-color: var(--bg-secondary);
     border-right: 1px solid var(--border-color);
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .logo h2 {
@@ -50,9 +52,11 @@ body {
 }
 
 .user-info {
-    padding: 15px 0;
     border-bottom: 1px solid #e5e5e5;
     margin-bottom: 20px;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
 }
 
 .menu ul {
@@ -232,4 +236,49 @@ input:checked + .slider:before {
 
 [data-theme="dark"] .stat-card.clickable:hover {
     box-shadow: 0 4px 8px rgba(255,255,255,0.1);
+}
+
+/* 在現有樣式中添加 */
+.notification svg,
+.user-profile svg {
+    width: 32;
+    height: 32;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.notification svg:hover,
+.user-profile svg:hover {
+    opacity: 0.8;
+}
+
+.notification {
+    position: relative;
+}
+
+/* 如果需要添加通知數量標記 */
+.notification::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+    display: none; /* 預設隱藏，有通知時才顯示 */
+}
+
+.notification.has-notification::after {
+    display: block;
+}
+
+/* 添加主題切換開關容器樣式 */
+.theme-switch-wrapper {
+    margin-top: auto;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
 } 

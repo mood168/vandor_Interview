@@ -30,12 +30,22 @@
     --select-bg: #fff;
 }
 
+/* 主題切換容器樣式 */
+.theme-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 /* 主題切換按鈕樣式 */
 .theme-switch {
     position: relative;
-    width: 60px;
-    height: 30px;
-    margin: 0 15px;
+    width: 150px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 5px;
 }
 
 .theme-switch input {
@@ -44,34 +54,36 @@
     height: 0;
 }
 
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--text-secondary);
-    transition: .4s;
-    border-radius: 30px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 22px;
-    width: 22px;
-    left: 4px;
-    bottom: 4px;
+.switch-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
     background-color: var(--bg-secondary);
-    transition: .4s;
-    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    transition: all 0.3s ease;
 }
 
-input:checked + .slider {
-    background-color: #0071e3;
+/* 主題文字樣式 */
+.theme-text {
+    color: var(--text-primary);
+    font-size: 20px;
 }
 
-input:checked + .slider:before {
-    transform: translateX(30px);
-} 
+/* 圖示樣式 */
+.theme-switch-icon {
+    width: 36px;
+    height: 36px;
+    transition: all 0.3s ease;
+}
+
+/* 懸停效果 */
+.theme-switch:hover .switch-wrapper {
+    border-color: var(--text-secondary);
+}
+ 

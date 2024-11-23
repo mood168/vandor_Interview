@@ -40,7 +40,6 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                     <input type="search" id="userSearch" placeholder="搜尋使用者...">
                 </div>
                 <div class="user-actions">
-                    <!--#include file="theme_switch.asp"-->
                     <button class="add-user-btn" onclick="showAddUserModal()">新增使用者</button>
                 </div>
             </header>

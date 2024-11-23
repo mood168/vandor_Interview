@@ -21,12 +21,30 @@
     color: var(--text-secondary);
 }
 
-.form-group input {
+.form-group input,
+.form-group select,
+.question-item input,
+.question-item select {
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
+    font-size: 16px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.question-item input:hover,
+.question-item select:hover,
+.form-group input:focus,
+.form-group select:focus,
+.question-item input:focus,
+.question-item select:focus {
+    border-color: var(--button-primary);
+    outline: none;
 }
 
 .category-section {
@@ -42,10 +60,11 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    color: var(--text-primary);
 }
 
 .optional-tag {
-    font-size: 18px;
+    font-size: 14px;
     color: var(--text-secondary);
     padding: 2px 8px;
     border: 1px solid var(--border-color);
@@ -53,19 +72,14 @@
 }
 
 .question-item {
-    display: grid;
-    grid-template-columns: 1fr 2fr auto;
-    gap: 20px;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.question-item:last-child {
-    border-bottom: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 
 .question-item label {
+    font-weight: 500;
     color: var(--text-primary);
 }
 
@@ -74,28 +88,62 @@
     margin-left: 4px;
 }
 
-.question-item input,
-.question-item select {
-    padding: 8px;
+.last-answer {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    padding: 8px 12px;
+    background-color: var(--bg-primary);
+    border-radius: 8px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background-color: var(--input-bg);
-    color: var(--input-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.edit-btn {
-    padding: 6px 12px;
+.date-badge {
+    background-color: #e0e0e0;
+    color: #666;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.edit-btn,
+.save-btn,
+.cancel-btn,
+button[type="button"] {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-btn,
+.save-btn,
+button[type="button"] {
+    background-color: var(--button-primary);
+    color: var(--button-text) !important;
+    border: none;
+    min-width: 80px;
+}
+
+.cancel-btn {
     background-color: transparent;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.3s;
+    color: var(--text-primary);
 }
 
-.edit-btn:hover {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+.edit-btn:hover,
+.save-btn:hover,
+.cancel-btn:hover,
+button[type="button"]:hover {
+    opacity: 0.8;
 }
 
 .form-actions {
@@ -105,32 +153,6 @@
     margin-top: 30px;
 }
 
-.save-btn,
-.cancel-btn {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.3s;
-}
-
-.save-btn {
-    background-color: var(--button-primary);
-    color: var(--button-text);
-    border: none;
-}
-
-.cancel-btn {
-    background-color: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-}
-
-.save-btn:hover,
-.cancel-btn:hover {
-    opacity: 0.8;
-}
-
 @media (max-width: 768px) {
     .company-info {
         grid-template-columns: 1fr;
@@ -138,7 +160,6 @@
 
     .question-item {
         grid-template-columns: 1fr;
-        gap: 10px;
     }
 }
 
@@ -178,7 +199,6 @@
 
     .question-item {
         grid-template-columns: 1fr;
-        gap: 10px;
     }
 }
 
@@ -197,4 +217,24 @@
     background-color: #fff;
     color: #000;
     padding: 8px;
+}
+
+/* 在現有樣式中添加 */
+#companyName option[style*="display: none"] {
+    display: none !important;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--button-primary);
 } 

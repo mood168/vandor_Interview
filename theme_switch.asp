@@ -1,8 +1,14 @@
 <!-- 主題切換開關 -->
-<label class="theme-switch">
-    <input type="checkbox" id="theme-toggle">
-    <span class="slider"></span>
-</label>
+<div class="theme-switch-container">
+<br/>
+<span class="theme-text">黑白主題</span>
+    <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle">        
+        <div class="switch-wrapper">            
+            <img class="theme-switch-icon" src="images/day-night.png" width="50" height="50" alt="日/夜切換圖示" class="theme-icon">
+        </div>
+    </label>
+</div>
 
 <script>
     // 檢查本地存儲中的主題設置

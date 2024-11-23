@@ -1,11 +1,10 @@
 <aside class="sidebar">
-    <div class="logo">
-        <h2>訪廠管理系統</h2>
+    <div>
+        <h2>訪廠管理系統</h2>        
+        <p class="user-info">歡迎, <%=Session("FullName")%> (<small><%=Session("UserRole")%></small>) </p>
+        
     </div>
-    <div class="user-info">
-        <p>歡迎, <%=Session("FullName")%></p>
-        <small><%=Session("UserRole")%></small>
-    </div>
+    
     <nav class="menu">
         <ul>
             <li><a href="dashboard.asp" class="<%
@@ -41,4 +40,5 @@
             <li><a href="logout.asp"><span class="icon">🚪</span>登出</a></li>
         </ul>
     </nav>
+    <hr><!--#include file="theme_switch.asp"-->
 </aside>

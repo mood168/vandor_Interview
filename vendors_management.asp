@@ -36,7 +36,6 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                            title="可使用代號、統一編號或廠商名稱搜尋">
                 </div>
                 <div class="user-actions">
-                    <!--#include file="theme_switch.asp"-->
                     <button class="add-vendor-btn" onclick="showAddVendorModal()">新增廠商</button>
                 </div>
             </header>
@@ -67,8 +66,8 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                                     <td><%=rsVendors("Phone")%></td>
                                     <td><%=rsVendors("Address")%></td>
                                     <td class="actions">
-                                        <button onclick="editVendor(<%=rsVendors("VendorID")%>)" class="edit-btn">編輯</button>
-                                        <button onclick="deleteVendor(<%=rsVendors("VendorID")%>)" class="delete-btn">刪除</button>
+                                        <button class="edit-btn" onclick="editVendor(<%=rsVendors("VendorID")%>)">編輯</button>
+                                        <button class="delete-btn" onclick="deleteVendor(<%=rsVendors("VendorID")%>)">刪除</button>
                                     </td>
                                 </tr>
                             <% 

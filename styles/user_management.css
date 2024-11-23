@@ -60,7 +60,7 @@
 }
 
 .edit-btn {
-    background-color: var(--button-primary);
+    background-color: #a0a1a1;
     color: #fff;
 }
 
@@ -86,7 +86,7 @@
 
 .add-user-btn {
     padding: 8px 16px;
-    background-color: var(--button-primary);
+    background-color: #fec235;
     color: #fff;
     border: none;
     border-radius: 8px;

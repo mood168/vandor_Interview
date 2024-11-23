@@ -1,27 +1,27 @@
 :root {
     /* 日間模式變數 */
     --bg-primary: #fff;
-    --bg-secondary: rgba(28, 28, 30, 0.9);
-    --text-primary: #fff;
-    --text-secondary: rgba(255, 255, 255, 0.6);
-    --border-color: rgba(255, 255, 255, 0.3);
-    --input-text: #fff;
-    --label-text: rgba(255, 255, 255, 0.6);
-    --button-bg: #fff;
-    --button-text: #000;
+    --bg-secondary: #1c1c1e;
+    --text-primary: #000;
+    --text-secondary: rgba(0, 0, 0, 0.6);
+    --border-color: rgba(0, 0, 0, 0.3);
+    --input-text: #000;
+    --label-text: rgba(0, 0, 0, 0.6);
+    --button-bg: #0071e3;
+    --button-text: #fff;
 }
 
 [data-theme="dark"] {
     /* 夜間模式變數 */
     --bg-primary: #000;
-    --bg-secondary: rgba(28, 28, 30, 0.9);
+    --bg-secondary: #1c1c1e;
     --text-primary: #fff;
     --text-secondary: rgba(255, 255, 255, 0.6);
     --border-color: rgba(255, 255, 255, 0.3);
     --input-text: #fff;
     --label-text: rgba(255, 255, 255, 0.6);
-    --button-bg: #fff;
-    --button-text: #000;
+    --button-bg: #0071e3;
+    --button-text: #fff;
 }
 
 body {
@@ -85,28 +85,21 @@ label {
     transition: 0.3s ease all;
 }
 
+.submit-button,
+button[type="button"] {
+    width: 320px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
 input:focus ~ label,
 input:valid ~ label {
     top: -20px;
     font-size: 18px;
     color: var(--text-primary);
-}
-
-.login-btn {
-    width: 100%;
-    padding: 15px;
-    background-color: var(--button-bg);
-    color: var(--button-text);
-    border: none;
-    border-radius: 8px;
-    font-size: 20px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.3s;
-}
-
-.login-btn:hover {
-    opacity: 0.9;
 }
 
 .forgot-password {
@@ -133,5 +126,18 @@ input:valid ~ label {
 
 input::placeholder {
     color: var(--text-secondary);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--button-bg);
+    color: var(--button-text) !important;
+    border: none;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.3s;
 }
   
