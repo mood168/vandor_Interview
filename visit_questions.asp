@@ -145,25 +145,19 @@ End If
 
     <script>
         function editQuestion(questionId) {
-            // 獲取對應的輸入框或選擇框的值
             const inputElement = document.querySelector(`[name="q_${questionId}"]`);
             const companySelect = document.getElementById('companyName');
+            const visitDateInput = document.getElementById('visitDate');
             
-            // 檢查元素是否存在
-            if (!inputElement || !companySelect) {
+            if (!inputElement || !companySelect || !visitDateInput) {
                 console.error('找不到必要的表單元素');
                 return;
             }
 
             const answer = inputElement.value;
             const companyName = companySelect.value;
+            const visitDate = visitDateInput.value;
             
-            // 輸出除錯信息
-            console.log('questionId:', questionId);
-            console.log('companyName:', companyName);
-            console.log('answer:', answer);
-            
-            // 驗證
             if (!companyName) {
                 alert('請先選擇公司名稱');
                 return;
@@ -174,13 +168,12 @@ End If
                 return;
             }
 
-            // 使用 URLSearchParams 來構建表單數據
             const formData = new URLSearchParams();
             formData.append('questionId', questionId);
             formData.append('companyName', companyName);
             formData.append('answer', answer);
+            formData.append('visitDate', visitDate);
 
-            // 發送請求
             fetch('save_answer.asp', {
                 method: 'POST',
                 headers: {
@@ -191,8 +184,9 @@ End If
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('答案儲存成功');
-                    location.reload();
+                    sessionStorage.setItem('selectedCompany', companyName);
+                    sessionStorage.setItem('visitDate', visitDate);
+                    window.location.reload();
                 } else {
                     alert(data.message || '儲存失敗');
                 }
@@ -202,6 +196,25 @@ End If
                 alert('儲存時發生錯誤');
             });
         }
+
+        window.addEventListener('load', function() {
+            const selectedCompany = sessionStorage.getItem('selectedCompany');
+            const visitDate = sessionStorage.getItem('visitDate');
+            
+            if (selectedCompany) {
+                const companySelect = document.getElementById('companyName');
+                companySelect.value = selectedCompany;
+                companySelect.dispatchEvent(new Event('change'));
+            }
+            
+            if (visitDate) {
+                const visitDateInput = document.getElementById('visitDate');
+                visitDateInput.value = visitDate;
+                sessionStorage.removeItem('visitDate');
+            }
+            
+            sessionStorage.removeItem('selectedCompany');
+        });
 
         document.getElementById('companyName').addEventListener('change', function() {
             const companyName = this.value;

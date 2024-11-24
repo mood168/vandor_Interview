@@ -11,10 +11,11 @@ If Session("UserID") = "" Then
 End If
 
 ' 取得表單資料
-Dim questionId, companyName, answer
+Dim questionId, companyName, answer, visitDate
 questionId = Request.Form("questionId")
 companyName = Request.Form("companyName")
 answer = Request.Form("answer")
+visitDate = Request.Form("visitDate")
 
 ' 基本驗證
 If questionId = "" Then
@@ -32,58 +33,84 @@ If answer = "" Then
     Response.End
 End If
 
-On Error Resume Next
-
 ' SQL 注入防護
 Function SafeSQL(str)
-    SafeSQL = "'" & Replace(str, "'", "''") & "'"
+    If IsNull(str) Or str = "" Then
+        SafeSQL = "NULL"
+    Else
+        SafeSQL = "'" & Replace(str, "'", "''") & "'"
+    End If
 End Function
+
+On Error Resume Next
 
 ' 檢查是否已存在訪廠記錄
 Dim rsCheck, visitId
 Set rsCheck = conn.Execute("SELECT VisitID FROM VisitRecords WHERE CompanyName = " & SafeSQL(companyName))
 
+If Err.Number <> 0 Then
+    Response.Write "{""success"":false,""message"":""檢查訪廠記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+    Response.End
+End If
+
 If rsCheck.EOF Then
     ' 新增訪廠主表記錄
     Dim sqlInsertVisit
     sqlInsertVisit = "INSERT INTO VisitRecords (CompanyName, VisitDate, VisitorID, Status, CreatedDate) " & _
-                     "VALUES (" & SafeSQL(companyName) & ", GETDATE(), " & Session("UserID") & ", 'Draft', GETDATE())"
+                     "VALUES (" & SafeSQL(companyName) & ", " & _
+                     SafeSQL(visitDate) & ", " & _
+                     Session("UserID") & ", 'Draft', GETDATE()); " & _
+                     "SELECT SCOPE_IDENTITY() AS NewID"
     
-    conn.Execute sqlInsertVisit
+    Set rsCheck = conn.Execute(sqlInsertVisit)
     
-    ' 取得新插入的 ID
-    Set rsCheck = conn.Execute("SELECT MAX(VisitID) AS NewID FROM VisitRecords WHERE CompanyName = " & SafeSQL(companyName))
+    If Err.Number <> 0 Then
+        Response.Write "{""success"":false,""message"":""新增訪廠記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+        Response.End
+    End If
+    
     visitId = rsCheck("NewID")
 Else
     visitId = rsCheck("VisitID")
+    ' 更新訪談日期
+    conn.Execute "UPDATE VisitRecords SET VisitDate = " & SafeSQL(visitDate) & " WHERE VisitID = " & visitId
+    
+    If Err.Number <> 0 Then
+        Response.Write "{""success"":false,""message"":""更新訪廠記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+        Response.End
+    End If
 End If
 
 ' 檢查是否已有答案
 Dim rsAnswer
 Set rsAnswer = conn.Execute("SELECT AnswerID FROM VisitAnswers WHERE VisitID = " & visitId & " AND QuestionID = " & questionId)
 
+If Err.Number <> 0 Then
+    Response.Write "{""success"":false,""message"":""檢查答案時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+    Response.End
+End If
+
 If rsAnswer.EOF Then
     ' 插入新答案
-    Dim sqlInsert
-    sqlInsert = "INSERT INTO VisitAnswers (VisitID, QuestionID, Answer, ModifiedDate) " & _
+    conn.Execute "INSERT INTO VisitAnswers (VisitID, QuestionID, Answer, ModifiedDate) " & _
                 "VALUES (" & visitId & ", " & questionId & ", " & SafeSQL(answer) & ", GETDATE())"
-    conn.Execute sqlInsert
 Else
     ' 更新現有答案
-    Dim sqlUpdate
-    sqlUpdate = "UPDATE VisitAnswers SET " & _
+    conn.Execute "UPDATE VisitAnswers SET " & _
                 "Answer = " & SafeSQL(answer) & ", " & _
                 "ModifiedDate = GETDATE() " & _
                 "WHERE VisitID = " & visitId & " AND QuestionID = " & questionId
-    conn.Execute sqlUpdate
 End If
 
 If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""資料庫錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+    Response.Write "{""success"":false,""message"":""儲存答案時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
 Else
     Response.Write "{""success"":true,""message"":""答案儲存成功""}"
 End If
 
+' 清理資源
+Set rsCheck = Nothing
+Set rsAnswer = Nothing
 conn.Close
 Set conn = Nothing
 %> 
