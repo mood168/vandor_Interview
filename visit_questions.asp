@@ -103,27 +103,18 @@ End If
                                             </label>
 
                                             <% If rsQuestions("HasOptions") Then %>
-                                                <select name="q_<%=rsQuestions("QuestionID")%>" 
-                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                <select name="q_<%=rsQuestions("QuestionID")%>">
                                                     <option value="">請選擇</option>
                                                     <% 
-                                                    If Not IsNull(rsQuestions("Options")) Then
-                                                        Dim optionItems
-                                                        ' 移除中括號並分割字串
-                                                        optionItems = Split(Replace(Replace(rsQuestions("Options"), "[", ""), "]", ""), ",")
-                                                        Dim optionItem
-                                                        For Each optionItem in optionItems
-                                                            ' 移除引號和多餘的空格
-                                                            optionItem = Trim(Replace(Replace(optionItem, """", ""), " ", ""))
-                                                            ' If optionItem <> "" Then
+                                                    Dim optionItems, optionItem
+                                                    optionItems = Split(Replace(Replace(rsQuestions("Options"), "[", ""), "]", ""), ",")
+                                                    For Each optionItem in optionItems
                                                     %>
-                                                            <option value="<%=optionItem%>"><%=optionItem%></option>
-                                                    <%
-                                                            ' End If
-                                                        Next
-                                                    End If
-                                                    %>
-                                                </select>
+                                                        <option value="<%=Replace(Replace(optionItem,"""","")," ","")%>">
+                                                            <%=Replace(Replace(optionItem,"""","")," ","")%>
+                                                        </option>
+                                                    <% Next %>
+                                                </select>   
                                             <% Else %>
                                                 <input type="text" name="q_<%=rsQuestions("QuestionID")%>"
                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
