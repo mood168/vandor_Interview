@@ -75,7 +75,11 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-primary);
 }
 
 .question-item label {
@@ -237,4 +241,53 @@ button[type="button"]:hover {
 .search-bar input:focus {
     outline: none;
     border-color: var(--button-primary);
+}
+
+/* 新增樣式 */
+.radio-group,
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.radio-label,
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.percentage-input,
+.amount-input {
+    width: 80px !important;
+    padding: 4px 8px !important;
+    margin-left: 10px;
+}
+
+.radio-label input[type="radio"],
+.checkbox-label input[type="checkbox"] {
+    width: auto !important;
+    margin-right: 5px;
+}
+
+.radio-label span,
+.checkbox-label span {
+    flex: 1;
+}
+
+.save-btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background-color: var(--button-primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.save-btn:hover {
+    opacity: 0.9;
 } 

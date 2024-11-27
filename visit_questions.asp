@@ -108,11 +108,7 @@ End If
                                 categoryID = rsCategories("CategoryID")
                         %>
                             <div class="category-section">
-                                <h2><%=rsCategories("CategoryName")%>
-                                <% If Not rsCategories("IsRequired") Then %>
-                                    <span class="optional-tag">選填</span>
-                                <% End If %>
-                                </h2>
+                                <h2><%=rsCategories("CategoryName")%></h2>
 
                                 <div class="questions">
                                     <% 
@@ -120,6 +116,12 @@ End If
                                     Set rsQuestions = conn.Execute("SELECT * FROM VisitQuestions WHERE CategoryID = " & categoryID & " ORDER BY SortOrder")
                                     
                                     Do While Not rsQuestions.EOF 
+                                        Dim questionId, answerType, hasOptions, options, hasPercentage
+                                        questionId = rsQuestions("QuestionID")
+                                        answerType = rsQuestions("AnswerType")
+                                        hasOptions = rsQuestions("HasOptions")
+                                        options = rsQuestions("Options")
+                                        hasPercentage = rsQuestions("HasPercentage")
                                     %>
                                         <div class="question-item">
                                             <label>
@@ -129,27 +131,94 @@ End If
                                                 <% End If %>
                                             </label>
 
-                                            <% If rsQuestions("HasOptions") Then %>
-                                                <select name="q_<%=rsQuestions("QuestionID")%>">
-                                                    <option value="">請選擇</option>
-                                                    <% 
-                                                    Dim optionItems, optionItem
-                                                    optionItems = Split(Replace(Replace(rsQuestions("Options"), "[", ""), "]", ""), ",")
-                                                    For Each optionItem in optionItems
-                                                    %>
-                                                        <option value="<%=Replace(Replace(optionItem,"""","")," ","")%>">
-                                                            <%=Replace(Replace(optionItem,"""","")," ","")%>
-                                                        </option>
-                                                    <% Next %>
-                                                </select>   
-                                            <% Else %>
-                                                <input type="text" name="q_<%=rsQuestions("QuestionID")%>"
-                                                       <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
-                                            <% End If %>
+                                            <% 
+                                            Select Case answerType
+                                                Case "text" 
+                                            %>
+                                                    <input type="text" name="q_<%=questionId%>" 
+                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                            <% 
+                                                Case "number" 
+                                            %>
+                                                    <input type="number" name="q_<%=questionId%>" 
+                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                            <% 
+                                                Case "date" 
+                                            %>
+                                                    <input type="date" name="q_<%=questionId%>" 
+                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                            <% 
+                                                Case "radio" 
+                                                    If hasOptions Then
+                                                        Dim radioOptions
+                                                        radioOptions = Split(Replace(Replace(options, "[", ""), "]", ""), ",")
+                                            %>
+                                                    <div class="radio-group">
+                                                        <% 
+                                                            For Each opt in radioOptions 
+                                                                opt = Replace(Replace(opt, """", ""), " ", "")
+                                                        %>
+                                                            <label class="radio-label">
+                                                                <input type="radio" name="q_<%=questionId%>" 
+                                                                    value="<%=opt%>" 
+                                                                    <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                                <span><%=opt%></span>
+                                                                <% If hasPercentage And InStr(opt, "佔") > 0 Then %>
+                                                                    <input type="number" class="percentage-input" 
+                                                                        name="q_<%=questionId%>_percent_<%=opt%>" 
+                                                                        min="0" max="100" placeholder="%">
+                                                                <% End If %>
+                                                            </label>
+                                                        <% Next %>
+                                                    </div>
+                                            <% 
+                                                    End If
+
+                                                Case "checkbox"
+                                                    If hasOptions Then
+                                                        Dim checkOptions
+                                                        checkOptions = Split(Replace(Replace(options, "[", ""), "]", ""), ",")
+                                            %>
+                                                    <div class="checkbox-group">
+                                                        <% 
+                                                            For Each opt in checkOptions 
+                                                                opt = Replace(Replace(opt, """", ""), " ", "")
+                                                        %>
+                                                            <label class="checkbox-label">
+                                                                <input type="checkbox" name="q_<%=questionId%>" 
+                                                                    value="<%=opt%>">
+                                                                <span><%=opt%></span>
+                                                                <% 
+                                                                If hasPercentage And InStr(opt, "佔") > 0 Then 
+                                                                    Dim inputName
+                                                                    If InStr(opt, ",") > 0 Then
+                                                                        ' 處理有金額的選項
+                                                                        Response.Write "<input type='number' class='amount-input' " & _
+                                                                                    "name='q_" & questionId & "_amount_" & opt & "' " & _
+                                                                                    "placeholder='元'>"
+                                                                    End If
+                                                                %>
+                                                                    <input type="number" class="percentage-input" 
+                                                                        name="q_<%=questionId%>_percent_<%=opt%>" 
+                                                                        min="0" max="100" placeholder="%">
+                                                                <% End If %>
+                                                            </label>
+                                                        <% Next %>
+                                                    </div>
+                                            <% 
+                                                    End If
+
+                                                Case Else
+                                            %>
+                                                    <input type="text" name="q_<%=questionId%>" 
+                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                            <%
+                                            End Select 
+                                            %>
 
                                             <% If rsQuestions("CanModify") Then %>
-                                                <button type="button" onclick="editQuestion(<%=rsQuestions("QuestionID")%>)">
-                                                    Save It
+                                                <button type="button" onclick="saveAnswer(<%=questionId%>)" class="save-btn">
+                                                    儲存
                                                 </button>
                                             <% End If %>
                                         </div>
@@ -334,12 +403,87 @@ End If
             }
         });
 
-        // 修改 select 的樣式，使隱藏的選項在下拉時真的隱藏
+        // 修改 select 的樣式使隱藏的選項在下拉時真的隱藏
         document.getElementById('companyName').addEventListener('mousedown', function(e) {
             if (e.target.tagName === 'OPTION' && e.target.style.display === 'none') {
                 e.preventDefault();
             }
         });
+
+        function saveAnswer(questionId) {
+            const form = document.getElementById('visitForm');
+            const companyName = form.companyName.value;
+            const visitDate = form.visitDate.value;
+            
+            if (!companyName) {
+                alert('請選擇公司名稱');
+                return;
+            }
+
+            // 收集答案數據
+            const formData = new FormData();
+            formData.append('questionId', questionId);
+            formData.append('companyName', companyName);
+            formData.append('visitDate', visitDate);
+
+            // 根據問題類型收集答案
+            const questionElement = document.querySelector(`[name^="q_${questionId}"]`);
+            const answerType = questionElement.type;
+            let answer = '';
+
+            if (answerType === 'radio') {
+                const selectedRadio = document.querySelector(`input[name="q_${questionId}"]:checked`);
+                if (selectedRadio) {
+                    answer = selectedRadio.value;
+                    // 檢查是否有百分比輸入
+                    const percentInput = document.querySelector(`[name="q_${questionId}_percent_${selectedRadio.value}"]`);
+                    if (percentInput) {
+                        answer += `|${percentInput.value}%`;
+                    }
+                }
+            } else if (answerType === 'checkbox') {
+                const checkedBoxes = document.querySelectorAll(`input[name="q_${questionId}"]:checked`);
+                const answers = [];
+                checkedBoxes.forEach(box => {
+                    let value = box.value;
+                    // 檢查是否有百分比和金額輸入
+                    const percentInput = document.querySelector(`[name="q_${questionId}_percent_${box.value}"]`);
+                    const amountInput = document.querySelector(`[name="q_${questionId}_amount_${box.value}"]`);
+                    if (percentInput) {
+                        value += `|${percentInput.value}%`;
+                    }
+                    if (amountInput) {
+                        value += `|${amountInput.value}元`;
+                    }
+                    answers.push(value);
+                });
+                answer = answers.join(',');
+            } else {
+                answer = questionElement.value;
+            }
+
+            formData.append('answer', answer);
+
+            // 發送請求
+            fetch('save_answer.asp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('儲存成功');
+                    // 重新載入最近答案
+                    loadLastAnswers(companyName);
+                } else {
+                    alert(data.message || '儲存失敗');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('儲存時發生錯誤');
+            });
+        }
     </script>
 </body>
 </html> 
