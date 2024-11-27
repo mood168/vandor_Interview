@@ -411,6 +411,8 @@ End If
         });
 
         function saveAnswer(questionId) {
+            console.log('questionId:', questionId); // 加入除錯訊息
+
             const form = document.getElementById('visitForm');
             const companyName = form.companyName.value;
             const visitDate = form.visitDate.value;
@@ -421,68 +423,84 @@ End If
             }
 
             // 收集答案數據
-            const formData = new FormData();
-            formData.append('questionId', questionId);
+            const formData = new URLSearchParams();
+            formData.append('questionId', questionId);  // 確保這裡有值
             formData.append('companyName', companyName);
             formData.append('visitDate', visitDate);
 
-            // 根據問題類型收集答案
-            const questionElement = document.querySelector(`[name^="q_${questionId}"]`);
-            const answerType = questionElement.type;
             let answer = '';
+            
+            try {
+                // 根據問題類型收集答案
+                const questionContainer = document.querySelector(`[name="q_${questionId}"]`).closest('.question-item');
+                const inputElement = questionContainer.querySelector(`[name="q_${questionId}"]`);
+                const answerType = inputElement.type;
 
-            if (answerType === 'radio') {
-                const selectedRadio = document.querySelector(`input[name="q_${questionId}"]:checked`);
-                if (selectedRadio) {
-                    answer = selectedRadio.value;
-                    // 檢查是否有百分比輸入
-                    const percentInput = document.querySelector(`[name="q_${questionId}_percent_${selectedRadio.value}"]`);
-                    if (percentInput) {
-                        answer += `|${percentInput.value}%`;
+                if (answerType === 'radio') {
+                    const selectedRadio = questionContainer.querySelector(`input[name="q_${questionId}"]:checked`);
+                    if (selectedRadio) {
+                        answer = selectedRadio.value;
+                        // 檢查是否有百分比輸入
+                        const percentInput = questionContainer.querySelector(`[name="q_${questionId}_percent_${selectedRadio.value}"]`);
+                        if (percentInput && percentInput.value) {
+                            answer += `|${percentInput.value}%`;
+                        }
                     }
-                }
-            } else if (answerType === 'checkbox') {
-                const checkedBoxes = document.querySelectorAll(`input[name="q_${questionId}"]:checked`);
-                const answers = [];
-                checkedBoxes.forEach(box => {
-                    let value = box.value;
-                    // 檢查是否有百分比和金額輸入
-                    const percentInput = document.querySelector(`[name="q_${questionId}_percent_${box.value}"]`);
-                    const amountInput = document.querySelector(`[name="q_${questionId}_amount_${box.value}"]`);
-                    if (percentInput) {
-                        value += `|${percentInput.value}%`;
-                    }
-                    if (amountInput) {
-                        value += `|${amountInput.value}元`;
-                    }
-                    answers.push(value);
-                });
-                answer = answers.join(',');
-            } else {
-                answer = questionElement.value;
-            }
-
-            formData.append('answer', answer);
-
-            // 發送請求
-            fetch('save_answer.asp', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('儲存成功');
-                    // 重新載入最近答案
-                    loadLastAnswers(companyName);
+                } else if (answerType === 'checkbox') {
+                    const checkedBoxes = questionContainer.querySelectorAll(`input[name="q_${questionId}"]:checked`);
+                    const answers = [];
+                    checkedBoxes.forEach(box => {
+                        let value = box.value;
+                        // 檢查是否有百分比和金額輸入
+                        const percentInput = questionContainer.querySelector(`[name="q_${questionId}_percent_${box.value}"]`);
+                        const amountInput = questionContainer.querySelector(`[name="q_${questionId}_amount_${box.value}"]`);
+                        if (percentInput && percentInput.value) {
+                            value += `|${percentInput.value}%`;
+                        }
+                        if (amountInput && amountInput.value) {
+                            value += `|${amountInput.value}元`;
+                        }
+                        answers.push(value);
+                    });
+                    answer = answers.join(',');
                 } else {
-                    alert(data.message || '儲存失敗');
+                    answer = inputElement.value;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('儲存時發生錯誤');
-            });
+
+                if (!answer) {
+                    alert('請輸入答案');
+                    return;
+                }
+
+                formData.append('answer', answer);
+
+                // 發送請求
+                fetch('save_answer.asp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('儲存成功');
+                        // 重新載入最近答案
+                        const companySelect = document.getElementById('companyName');
+                        companySelect.dispatchEvent(new Event('change'));
+                    } else {
+                        alert(data.message || '儲存失敗');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('儲存時發生錯誤');
+                });
+            } catch (error) {
+                console.error('Error processing answer:', error);
+                alert('處理答案時發生錯誤');
+            }
         }
     </script>
 </body>

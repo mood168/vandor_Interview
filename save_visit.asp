@@ -11,13 +11,16 @@ If Session("UserID") = "" Then
 End If
 
 ' 取得表單資料
-Dim visitId, companyName, visitorId, interviewee, visitDate, status
-visitId = Request.Form("visitId")
+Dim companyName, questionId, answer, visitDate
 companyName = Request.Form("companyName")
-visitorId = Request.Form("visitorId")
-interviewee = Request.Form("interviewee")
+questionId = Request.Form("questionId")
+answer = Request.Form("answer")
 visitDate = Request.Form("visitDate")
-status = Request.Form("status")
+
+If companyName = "" Or questionId = "" Or answer = "" Or visitDate = "" Then
+    Response.Write "{""success"":false,""message"":""缺少必要參數""}"
+    Response.End
+End If
 
 ' SQL 注入防護
 Function SafeSQL(str)
@@ -30,23 +33,54 @@ End Function
 
 On Error Resume Next
 
-' 更新訪廠記錄
-Dim sql
-sql = "UPDATE VisitRecords SET " & _
-      "CompanyName = " & SafeSQL(companyName) & ", " & _
-      "VisitorID = " & SafeSQL(visitorId) & ", " & _
-      "Interviewee = " & SafeSQL(interviewee) & ", " & _
-      "VisitDate = " & SafeSQL(visitDate) & ", " & _
-      "Status = " & SafeSQL(status) & ", " & _
-      "ModifiedDate = GETDATE() " & _
-      "WHERE VisitID = " & CLng(visitId)
+' 先檢查是否已有訪廠記錄
+Dim sql, rs, visitId
+sql = "SELECT VisitID FROM VisitRecords " & _
+      "WHERE CompanyName = " & SafeSQL(companyName) & " " & _
+      "AND CONVERT(date, VisitDate) = CONVERT(date, " & SafeSQL(visitDate) & ")"
+
+Set rs = conn.Execute(sql)
+
+If rs.EOF Then
+    ' 建立新的訪廠記錄
+    sql = "INSERT INTO VisitRecords (CompanyName, VisitDate, VisitorID, Status) " & _
+          "VALUES (" & SafeSQL(companyName) & ", " & SafeSQL(visitDate) & ", " & _
+          Session("UserID") & ", 'Draft'); SELECT SCOPE_IDENTITY() AS NewID"
+    
+    Set rs = conn.Execute(sql)
+    visitId = rs("NewID")
+Else
+    visitId = rs("VisitID")
+End If
+
+' 更新答案
+sql = "MERGE VisitAnswers AS target " & _
+      "USING (SELECT " & visitId & " AS VisitID, " & questionId & " AS QuestionID) AS source " & _
+      "ON target.VisitID = source.VisitID AND target.QuestionID = source.QuestionID " & _
+      "WHEN MATCHED THEN " & _
+      "    UPDATE SET Answer = " & SafeSQL(answer) & ", ModifiedDate = GETDATE() " & _
+      "WHEN NOT MATCHED THEN " & _
+      "    INSERT (VisitID, QuestionID, Answer) " & _
+      "    VALUES (" & visitId & ", " & questionId & ", " & SafeSQL(answer) & ");"
+
+conn.Execute sql
+
+' 更新歷史記錄
+sql = "INSERT INTO VisitAnswerHistory (QuestionID, VendorID, Answer, CreatedBy) " & _
+      "SELECT " & questionId & ", v.VendorID, " & SafeSQL(answer) & ", " & Session("UserID") & " " & _
+      "FROM Vendors v WHERE v.VendorName = " & SafeSQL(companyName)
 
 conn.Execute sql
 
 If Err.Number <> 0 Then
     Response.Write "{""success"":false,""message"":""資料庫錯誤: " & Server.HTMLEncode(Err.Description) & """}"
 Else
-    Response.Write "{""success"":true,""message"":""訪廠記錄更新成功""}"
+    Response.Write "{""success"":true,""message"":""答案儲存成功"",""visitId"":" & visitId & "}"
+End If
+
+If IsObject(rs) Then
+    rs.Close
+    Set rs = Nothing
 End If
 
 conn.Close

@@ -44,9 +44,22 @@ End Function
 
 On Error Resume Next
 
+' 先取得廠商ID
+Dim vendorId
+Set rs = conn.Execute("SELECT VendorID FROM Vendors WHERE VendorName = " & SafeSQL(companyName))
+
+If rs.EOF Then
+    Response.Write "{""success"":false,""message"":""找不到對應的廠商資料""}"
+    Response.End
+End If
+
+vendorId = rs("VendorID")
+
 ' 檢查是否已存在訪廠記錄
 Dim rsCheck, visitId
-Set rsCheck = conn.Execute("SELECT VisitID FROM VisitRecords WHERE CompanyName = " & SafeSQL(companyName))
+Set rsCheck = conn.Execute("SELECT VisitID FROM VisitRecords " & _
+                          "WHERE CompanyName = " & SafeSQL(companyName) & " " & _
+                          "AND CONVERT(date, VisitDate) = CONVERT(date, " & SafeSQL(visitDate) & ")")
 
 If Err.Number <> 0 Then
     Response.Write "{""success"":false,""message"":""檢查訪廠記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
@@ -72,13 +85,6 @@ If rsCheck.EOF Then
     visitId = rsCheck("NewID")
 Else
     visitId = rsCheck("VisitID")
-    ' 更新訪談日期
-    conn.Execute "UPDATE VisitRecords SET VisitDate = " & SafeSQL(visitDate) & " WHERE VisitID = " & visitId
-    
-    If Err.Number <> 0 Then
-        Response.Write "{""success"":false,""message"":""更新訪廠記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
-        Response.End
-    End If
 End If
 
 ' 檢查是否已有答案
@@ -90,27 +96,56 @@ If Err.Number <> 0 Then
     Response.End
 End If
 
+' 更新或插入答案
+Dim sqlAnswer
 If rsAnswer.EOF Then
     ' 插入新答案
-    conn.Execute "INSERT INTO VisitAnswers (VisitID, QuestionID, Answer, ModifiedDate) " & _
+    sqlAnswer = "INSERT INTO VisitAnswers (VisitID, QuestionID, Answer, ModifiedDate) " & _
                 "VALUES (" & visitId & ", " & questionId & ", " & SafeSQL(answer) & ", GETDATE())"
 Else
     ' 更新現有答案
-    conn.Execute "UPDATE VisitAnswers SET " & _
+    sqlAnswer = "UPDATE VisitAnswers SET " & _
                 "Answer = " & SafeSQL(answer) & ", " & _
                 "ModifiedDate = GETDATE() " & _
                 "WHERE VisitID = " & visitId & " AND QuestionID = " & questionId
 End If
 
+conn.Execute sqlAnswer
+
 If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""儲存答案時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+    Response.Write "{""success"":false,""message"":""更新答案時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+    Response.End
+End If
+
+' 新增歷史記錄
+Dim sqlHistory
+sqlHistory = "INSERT INTO VisitAnswerHistory (QuestionID, VendorID, Answer, CreatedBy) " & _
+            "VALUES (" & questionId & ", " & vendorId & ", " & SafeSQL(answer) & ", " & Session("UserID") & ")"
+
+conn.Execute sqlHistory
+
+If Err.Number <> 0 Then
+    Response.Write "{""success"":false,""message"":""新增歷史記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
 Else
-    Response.Write "{""success"":true,""message"":""答案儲存成功""}"
+    Response.Write "{""success"":true,""message"":""答案儲存成功"",""visitId"":" & visitId & "}"
 End If
 
 ' 清理資源
-Set rsCheck = Nothing
-Set rsAnswer = Nothing
+If IsObject(rs) Then
+    rs.Close
+    Set rs = Nothing
+End If
+
+If IsObject(rsCheck) Then
+    rsCheck.Close
+    Set rsCheck = Nothing
+End If
+
+If IsObject(rsAnswer) Then
+    rsAnswer.Close
+    Set rsAnswer = Nothing
+End If
+
 conn.Close
 Set conn = Nothing
 %> 
