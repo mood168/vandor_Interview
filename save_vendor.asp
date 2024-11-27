@@ -28,7 +28,7 @@ phone = Request.Form("phone")
 address = Request.Form("address")
 email = Request.Form("email")
 website = Request.Form("website")
-
+searchKeyword = Request.Form("searchKeyword")
 ' 基本驗證
 If parentCode = "" Then HandleError("母代號不能為空")
 If childCode = "" Then HandleError("子代號不能為空")
@@ -85,6 +85,13 @@ End If
 
 ' 成功回應
 Response.Write "{""success"": true, ""message"": ""資料儲存成功""}"
+' 檢查來源頁面並導回
+If Request.ServerVariables("HTTP_REFERER") <> "" Then
+    If InStr(Request.ServerVariables("HTTP_REFERER"), "dashboard.asp") > 0 Then
+        Response.Redirect "dashboard.asp?searchKeyword=" & searchKeyword
+        Response.End
+    End If
+End If
 
 Response.Redirect "vendors_management.asp"
 conn.Close

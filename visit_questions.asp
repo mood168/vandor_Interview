@@ -29,6 +29,36 @@ End If
     <title>訪廠題庫列表</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/visit_questions.css">
+    <style>
+        /* 在 head 區塊中加入或修改以下樣式 */
+        .top-bar {
+            display: flex;
+            justify-content: center; /* 水平置中 */
+            align-items: center;    /* 垂直置中 */
+            padding: 1rem;
+            background-color: var(--header-bg);
+        }
+
+        .search-bar {
+            width: 100%;
+            max-width: 600px;      /* 限制最大寬度 */
+            margin: 0 auto;        /* 水平置中 */
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        .user-actions {
+            display: none;         /* 隱藏不需要的使用者操作區 */
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -38,10 +68,7 @@ End If
         <main class="main-content">
             <header class="top-bar">
                 <div class="search-bar">
-                    <input type="search" placeholder="輸入公司名稱模糊搜尋...">
-                </div>
-                <div class="user-actions">
-                    <!-- 移除這裡的 theme_switch.asp include -->
+                    <input type="search" placeholder="輸入公司名稱模糊搜尋..." value="<%= Request.QueryString("vendor") %>">
                 </div>
             </header>
 
@@ -197,11 +224,38 @@ End If
             });
         }
 
+        // 在頁面載入時執行
         window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const vendorFromUrl = urlParams.get('vendor');
+            
+            // 如果 URL 中有 vendor 參數
+            if (vendorFromUrl) {
+                const companySelect = document.getElementById('companyName');
+                const decodedVendor = decodeURIComponent(vendorFromUrl);
+                
+                // 選中對應的選項
+                for (let i = 0; i < companySelect.options.length; i++) {
+                    if (companySelect.options[i].value === decodedVendor) {
+                        companySelect.selectedIndex = i;
+                        // 觸發 change 事件以載入最近答案
+                        companySelect.dispatchEvent(new Event('change'));
+                        break;
+                    }
+                }
+
+                // 將公司名稱填入搜尋框
+                const searchInput = document.querySelector('.search-bar input');
+                if (searchInput) {
+                    searchInput.value = decodedVendor;
+                }
+            }
+
+            // 原有的 sessionStorage 相關代碼
             const selectedCompany = sessionStorage.getItem('selectedCompany');
             const visitDate = sessionStorage.getItem('visitDate');
             
-            if (selectedCompany) {
+            if (selectedCompany && !vendorFromUrl) {  // 只在沒有 URL 參數時才使用 sessionStorage
                 const companySelect = document.getElementById('companyName');
                 companySelect.value = selectedCompany;
                 companySelect.dispatchEvent(new Event('change'));
@@ -213,7 +267,9 @@ End If
                 sessionStorage.removeItem('visitDate');
             }
             
-            sessionStorage.removeItem('selectedCompany');
+            if (!vendorFromUrl) {  // 只在沒有 URL 參數時才清除 sessionStorage
+                sessionStorage.removeItem('selectedCompany');
+            }
         });
 
         document.getElementById('companyName').addEventListener('change', function() {

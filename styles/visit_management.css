@@ -1,4 +1,4 @@
-.vendors-table-container {
+.visits-table-container {
     background-color: var(--bg-secondary);
     border-radius: 12px;
     padding: 20px;
@@ -6,26 +6,48 @@
     overflow-x: auto;
 }
 
-.vendors-table {
+.visits-table {
     width: 100%;
     border-collapse: collapse;
     color: var(--text-primary);
 }
 
-.vendors-table th,
-.vendors-table td {
+.visits-table th,
+.visits-table td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
 
-.vendors-table th {
+.visits-table th {
     font-weight: 500;
     color: var(--text-secondary);
 }
 
-.vendors-table tbody tr:hover {
+.visits-table tbody tr:hover {
     background-color: var(--bg-primary);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.status-badge.draft {
+    background-color: #ff9500;
+    color: #fff;
+}
+
+.status-badge.completed {
+    background-color: #34c759;
+    color: #fff;
+}
+
+.status-badge.reviewed {
+    background-color: #007aff;
+    color: #fff;
 }
 
 .actions {
@@ -34,34 +56,35 @@
 }
 
 .edit-btn,
-.delete-btn {
+.download-btn {
     padding: 6px 12px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 14px;
     transition: opacity 0.3s;
+    text-decoration: none;
 }
 
 .edit-btn {
-    background-color: #b5b5b5;
+    background-color: #007aff;
     color: #fff;
 }
 
-.delete-btn {
-    background-color: #ff3b30;
+.download-btn {
+    background-color: #34c759;
     color: #fff;
 }
 
-.add-vendor-btn {
-    padding: 8px 16px;
-    background-color: #f9c857;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: opacity 0.3s;
-    font-size: 20px;
+.edit-btn:hover,
+.download-btn:hover {
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .actions {
+        flex-direction: column;
+    }
 }
 
 /* Modal 樣式 */
@@ -83,16 +106,8 @@
     padding: 30px;
     border-radius: 12px;
     width: 100%;
-    max-width: 600px;
+    max-width: 500px;
     box-shadow: var(--card-shadow);
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
 }
 
 .form-group {
@@ -105,14 +120,14 @@
     color: var(--text-secondary);
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 8px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     background-color: var(--input-bg);
     color: var(--input-text);
-    font-size: 16px;
 }
 
 .modal-actions {
@@ -120,7 +135,7 @@
     justify-content: flex-end;
     gap: 12px;
     margin-top: 20px;
-}
+} 
 
 .save-btn,
 .cancel-btn {
@@ -142,19 +157,3 @@
     border: 1px solid var(--border-color);
     color: var(--text-primary);
 }
-
-/* 響應式設計 */
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .actions {
-        flex-direction: column;
-    }
-
-    .modal-content {
-        margin: 20px;
-        padding: 20px;
-    }
-} 

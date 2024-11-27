@@ -8,6 +8,26 @@ If Session("UserID") = "" Then
     Response.Redirect "login.html"
     Response.End
 End If
+
+' 處理搜尋請求
+Dim searchKeyword, sql, rs
+If Request.QueryString("searchKeyword") <> "" Then
+    searchKeyword = Request.QueryString("searchKeyword")
+Else
+    searchKeyword = Request.Form("searchKeyword")
+End If
+
+If searchKeyword <> "" Then
+    ' 建立模糊搜尋 SQL
+    sql = "SELECT parentCode, ChildCode, VendorName, UniformNumber FROM Vendors " & _
+          "WHERE parentCode LIKE '%" & searchKeyword & "%' " & _
+          "OR ChildCode LIKE '%" & searchKeyword & "%' " & _
+          "OR VendorName LIKE '%" & searchKeyword & "%' " & _
+          "OR UniformNumber LIKE '%" & searchKeyword & "%' " & _
+          "ORDER BY parentCode, ChildCode"
+    
+    Set rs = conn.Execute(sql)
+End If
 %>
 <!DOCTYPE html>
 <html lang="zh-TW" data-theme="light">
@@ -16,6 +36,170 @@ End If
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系統管理後台</title>
     <link rel="stylesheet" href="styles/dashboard.css">
+    <style>
+        .search-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        .search-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .search-button {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .search-results {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+        .search-results th, 
+        .search-results td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        .search-results th {
+            background-color: var(--header-bg);
+            color: var(--text-color);
+        }
+        .search-results tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        /* 深色模式特定樣式 */
+        [data-theme="dark"] .search-results {
+            border-color: var(--border-color);
+        }
+        [data-theme="dark"] .search-input {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        [data-theme="dark"] .search-button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 新增廠商表單樣式 */
+        .add-vendor-form {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+        .add-vendor-form h2 {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .form-field {
+            margin-bottom: 15px;
+        }
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+        .form-field input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        .form-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .form-button {
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background-color: var(--button-bg);
+            color: var(--text-color);
+        }
+        .form-button.primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+    </style>
+    <!-- 加入 jQuery 函式庫 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            let searchTimer;
+            
+            // 監聽搜尋框輸入事件
+            $('.search-input').on('input', function() {
+                clearTimeout(searchTimer);
+                const searchValue = $(this).val();
+                
+                searchTimer = setTimeout(function() {
+                    performSearch(searchValue);
+                }, 300);
+            });
+            
+            // 執行搜尋
+            function performSearch(keyword) {
+                $.ajax({
+                    url: 'search_vendors.asp',
+                    method: 'GET',
+                    data: { searchKeyword: keyword },
+                    success: function(response) {
+                        $('.search-results-container').html(response);
+                        // 為新加載的表格行加入點擊事件
+                        bindTableRowClick();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('搜尋發生錯誤:', error);
+                    }
+                });
+            }
+
+            // 綁定表格行點擊事件
+            function bindTableRowClick() {
+                $('.search-results tbody tr').css('cursor', 'pointer').on('click', function() {
+                    const vendorName = $(this).find('td:eq(2)').text(); // 第三欄是廠商名稱
+                    window.location.href = 'visit_questions.asp?vendor=' + encodeURIComponent(vendorName);
+                });
+            }
+
+            // 初始綁定表格行點擊事件
+            bindTableRowClick();
+        });
+    </script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -24,72 +208,26 @@ End If
 
         <!-- 主要內容區 -->
         <main class="main-content">
-            <header class="top-bar">
-                <div class="search-bar">
-                    <input type="search" placeholder="搜尋...">
-                </div>
-                <div class="user-actions">                    
-                    <span class="notification">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16ZM16 17H8V11C8 8.52 9.51 6.5 12 6.5C14.49 6.5 16 8.52 16 11V17Z" fill="currentColor"/>
-                        </svg>
-                    </span>
-                    <span class="user-profile">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
-                        </svg>
-                    </span>
-                </div>
-            </header>
-
-            <div class="content">
-                <h1>儀表板</h1>
-                <div class="stats-grid">
-                    <div class="stat-card clickable" onclick="window.location.href='visit_questions.asp'">
-                        <h3>訪廠題庫列表</h3>
-                        <p class="number">25</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>待訪廠數</h3>
-                        <p class="number">8</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>本月訪廠數</h3>
-                        <p class="number">342</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>廠商列表</h3>
-                        <p class="number">56</p>
-                    </div>
+            <div class="search-container">
+                <div class="search-form">
+                    <input type="text" name="searchKeyword" class="search-input" 
+                           placeholder="請輸入 母代號 / 子代號 / 廠商名稱 / 統一編號 搜尋..." 
+                           value="<%= searchKeyword %>">
+                    <button type="button" class="search-button" onclick="window.location.href='dashboard.asp'">清除</button>                    
                 </div>
 
-                <div class="recent-activities">
-                    <h2>最近活動</h2>
-                    <div class="activity-list">
-                        <!-- 活動列表將通過後端資料動態生成 -->
-                    </div>
+                <!-- 新增一個容器來顯示搜尋結果 -->
+                <div class="search-results-container">
+                    <!-- 移除這裡的初始表單顯示邏輯，改由 search_vendors.asp 控制 -->
                 </div>
             </div>
         </main>
     </div>
-
-    <!-- 主題切換 JavaScript -->
-    <script>
-        // 檢查本地存儲中的主題設置
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        document.getElementById('theme-toggle').checked = currentTheme === 'dark';
-
-        // 主題切換監聽器
-        document.getElementById('theme-toggle').addEventListener('change', function(e) {
-            if(e.target.checked) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-            }
-        });
-    </script>
 </body>
-</html> 
+</html>
+<% 
+If IsObject(rs) Then
+    rs.Close
+    Set rs = Nothing
+End If
+%> 

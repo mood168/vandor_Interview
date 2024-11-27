@@ -6,7 +6,8 @@ CREATE TABLE [dbo].[VisitRecords](
     [VisitorID] [int] FOREIGN KEY REFERENCES Users(UserID),
     [Status] [nvarchar](20) DEFAULT 'Draft',  -- Draft, Completed, Reviewed
     [CreatedDate] [datetime] DEFAULT GETDATE(),
-    [ModifiedDate] [datetime] DEFAULT GETDATE()
+    [ModifiedDate] [datetime] DEFAULT GETDATE(),
+    [Interviewee] [nvarchar](100) NULL
 )
 GO
 
