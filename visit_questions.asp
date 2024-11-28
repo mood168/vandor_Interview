@@ -134,6 +134,41 @@ End If
             cursor: pointer;
             transition: all 0.2s ease;
         }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;  /* 允許選項換行 */
+            gap: 10px;        /* 選項之間的間距 */
+            width: 100%;
+            max-height: none; /* 移除最大高度限制 */
+            overflow: visible; /* 移除 overflow 設定 */
+        }
+
+        .checkbox-label {
+            flex: 0 1 auto;   /* 允許元素根據內容自動調整大小 */
+            white-space: nowrap; /* 防止文字換行 */
+            margin: 5px;
+            padding: 4px 8px;
+            border: 1px solid transparent; /* 預設透明邊框 */
+        }
+
+        /* 確保輸入框和標籤在同一行 */
+        .checkbox-label input[type="number"] {
+            width: 80px;      /* 設定合適的寬度 */
+            margin: 0 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* 百分比輸入框的特定樣式 */
+        .percentage-input {
+            width: 60px !important;
+        }
+
+        /* 金額輸入框的特定樣式 */
+        .amount-input {
+            width: 100px !important;
+        }
     </style>
 </head>
 <body>
@@ -515,7 +550,7 @@ End If
                         // 檢查是否有百分比輸入
                         const percentInput = questionContainer.querySelector(`[name="q_${questionId}_percent_${selectedRadio.value}"]`);
                         if (percentInput && percentInput.value) {
-                            answer += `|${percentInput.value}%`;
+                            answer += `${percentInput.value}%`;
                         }
                     }
                 } else if (answerType === 'checkbox') {
@@ -527,10 +562,10 @@ End If
                         const percentInput = questionContainer.querySelector(`[name="q_${questionId}_percent_${box.value}"]`);
                         const amountInput = questionContainer.querySelector(`[name="q_${questionId}_amount_${box.value}"]`);
                         if (percentInput && percentInput.value) {
-                            value += `|${percentInput.value}%`;
+                            value += `${percentInput.value.replace('%', '')}%`;
                         }
                         if (amountInput && amountInput.value) {
-                            value += `|${amountInput.value}元`;
+                            value += `${amountInput.value.replace('%', '')}元`;
                         }
                         answers.push(value);
                     });

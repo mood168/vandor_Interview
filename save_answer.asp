@@ -14,7 +14,7 @@ End If
 Dim questionId, companyName, answer, visitDate
 questionId = Request.Form("questionId")
 companyName = Request.Form("companyName")
-answer = Request.Form("answer")
+answer = Replace(Replace(Request.Form("answer"), "%,元", "元"), "|", "")
 visitDate = Request.Form("visitDate")
 
 ' 基本驗證
