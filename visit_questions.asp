@@ -54,9 +54,85 @@ End If
             background-color: var(--input-bg);
             color: var(--text-color);
         }
+        
+        .save-btn {
+            padding: 8px 16px;
+            border: 2px solid #4a90e2;  /* 藍色外框 */
+            border-radius: 4px;
+            background-color: white;
+            color: #4a90e2;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .save-btn:hover {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .save-btn:active {
+            transform: translateY(1px);
+        }
 
         .user-actions {
             display: none;         /* 隱藏不需要的使用者操作區 */
+        }
+
+        /* Radio 按鈕樣式 */
+        .radio-label input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .radio-label:hover {
+            border: 1px solid #4a90e2;
+            border-radius: 4px;
+            padding: 4px 8px;
+            background-color: #f5f8ff;
+        }
+
+        .radio-label input[type="radio"]:checked + span {
+            color: #4a90e2;
+            font-weight: bold;
+        }
+
+        .radio-label input[type="radio"]:focus + span {
+            outline: 2px solid #4a90e2;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        /* Checkbox 按鈕樣式 */
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        .checkbox-label:hover {
+            border: 1px solid #4a90e2;
+            border-radius: 4px;
+            padding: 4px 8px;
+            background-color: #f5f8ff;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + span {
+            color: #4a90e2;
+            font-weight: bold;
+        }
+
+        .checkbox-label input[type="checkbox"]:focus + span {
+            outline: 2px solid #4a90e2;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        /* 確保 label 有足夠的間距 */
+        .radio-label, .checkbox-label {
+            margin: 4px;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
     </style>
 </head>
@@ -124,7 +200,7 @@ End If
                                         hasPercentage = rsQuestions("HasPercentage")
                                     %>
                                         <div class="question-item">
-                                            <label>
+                                            <label style="font-size: 18px;">
                                                 <%=rsQuestions("QuestionText")%>
                                                 <% If rsQuestions("IsRequired") Then %>
                                                     <span class="required">*</span>
@@ -153,20 +229,15 @@ End If
                                                         Dim radioOptions
                                                         radioOptions = Split(Replace(Replace(options, "[", ""), "]", ""), ",")
                                             %>
-                                                    <div class="radio-group">
+                                                    <div class="radio-group" style="display: inline-block;">
                                                         <% 
                                                             For Each opt in radioOptions 
                                                                 opt = Replace(Replace(opt, """", ""), " ", "")
                                                         %>
-                                                            <label class="radio-label">
-                                                                <input type="radio" name="q_<%=questionId%>" 
-                                                                    value="<%=opt%>" 
-                                                                    <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
-                                                                <span><%=opt%></span>
+                                                            <label class="radio-label" style="display: inline-block;">
+                                                                <input type="radio" name="q_<%=questionId%>" value="<%=opt%>" <%=IIf(rsQuestions("IsRequired"), "required", "")%>><span><%=opt%></span>
                                                                 <% If hasPercentage And InStr(opt, "佔") > 0 Then %>
-                                                                    <input type="number" class="percentage-input" 
-                                                                        name="q_<%=questionId%>_percent_<%=opt%>" 
-                                                                        min="0" max="100" placeholder="%">
+                                                                    <input type="number" class="percentage-input" name="q_<%=questionId%>_percent_<%=opt%>" min="0" max="100" placeholder="%">
                                                                 <% End If %>
                                                             </label>
                                                         <% Next %>
@@ -179,12 +250,12 @@ End If
                                                         Dim checkOptions
                                                         checkOptions = Split(Replace(Replace(options, "[", ""), "]", ""), ",")
                                             %>
-                                                    <div class="checkbox-group">
+                                                    <div class="checkbox-group" style="display: inline-block;">
                                                         <% 
                                                             For Each opt in checkOptions 
                                                                 opt = Replace(Replace(opt, """", ""), " ", "")
                                                         %>
-                                                            <label class="checkbox-label">
+                                                            <label class="checkbox-label" style="display: inline-block;">
                                                                 <input type="checkbox" name="q_<%=questionId%>" 
                                                                     value="<%=opt%>">
                                                                 <span><%=opt%></span>
@@ -217,7 +288,7 @@ End If
                                             %>
 
                                             <% If rsQuestions("CanModify") Then %>
-                                                <button type="button" onclick="saveAnswer(<%=questionId%>)" class="save-btn">
+                                                <button class="save-btn" type="button" onclick="saveAnswer(<%=questionId%>)">
                                                     儲存
                                                 </button>
                                             <% End If %>
@@ -345,7 +416,7 @@ End If
             const companyName = this.value;
             if (!companyName) return;
 
-            // 清除所有現有的最近答案顯示
+            // 清除所有現的最近答案示
             document.querySelectorAll('.last-answer').forEach(el => el.remove());
 
             // 獲取所有問題的最近答案

@@ -115,7 +115,6 @@
 }
 
 .edit-btn,
-.save-btn,
 .cancel-btn,
 button[type="button"] {
     padding: 8px 16px;
@@ -129,7 +128,6 @@ button[type="button"] {
 }
 
 .edit-btn,
-.save-btn,
 button[type="button"] {
     background-color: var(--button-primary);
     color: var(--button-text) !important;
@@ -144,7 +142,6 @@ button[type="button"] {
 }
 
 .edit-btn:hover,
-.save-btn:hover,
 .cancel-btn:hover,
 button[type="button"]:hover {
     opacity: 0.8;
@@ -247,17 +244,19 @@ button[type="button"]:hover {
 .radio-group,
 .checkbox-group {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 10px 0;
+    flex-wrap: nowrap;  /* 防止換行 */
+    overflow-x: auto;   /* 如果內容過長，允許水平捲動 */
+    gap: 1rem;         /* 選項之間的間距 */
+    padding: 0.5rem 0;
 }
 
 .radio-label,
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 10px;
-    cursor: pointer;
+    white-space: nowrap;  /* 防止文字換行 */
+    flex-shrink: 0;      /* 防止壓縮 */
+    gap: 0.5rem;
 }
 
 .percentage-input,
@@ -278,16 +277,3 @@ button[type="button"]:hover {
     flex: 1;
 }
 
-.save-btn {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background-color: var(--button-primary);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.save-btn:hover {
-    opacity: 0.9;
-} 
