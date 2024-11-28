@@ -128,7 +128,7 @@ End If
 
         /* 確保 label 有足夠的間距 */
         .radio-label, .checkbox-label {
-            margin: 4px;
+            margin: 10px;
             display: inline-block;
             position: relative;
             cursor: pointer;
@@ -206,7 +206,7 @@ End If
                                                     <span class="required">*</span>
                                                 <% End If %>
                                             </label>
-
+                                            <hr/>
                                             <% 
                                             Select Case answerType
                                                 Case "text" 
@@ -229,7 +229,7 @@ End If
                                                         Dim radioOptions
                                                         radioOptions = Split(Replace(Replace(options, "[", ""), "]", ""), ",")
                                             %>
-                                                    <div class="radio-group" style="display: inline-block;">
+                                                    <div class="radio-group">
                                                         <% 
                                                             For Each opt in radioOptions 
                                                                 opt = Replace(Replace(opt, """", ""), " ", "")
@@ -250,7 +250,7 @@ End If
                                                         Dim checkOptions
                                                         checkOptions = Split(Replace(Replace(options, "[", ""), "]", ""), ",")
                                             %>
-                                                    <div class="checkbox-group" style="display: inline-block;">
+                                                    <div class="checkbox-group">
                                                         <% 
                                                             For Each opt in checkOptions 
                                                                 opt = Replace(Replace(opt, """", ""), " ", "")
@@ -424,29 +424,30 @@ End If
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // 為每個問題添加最近答案
                         data.answers.forEach(answer => {
                             const questionInput = document.querySelector(`[name="q_${answer.QuestionID}"]`);
                             if (questionInput) {
-                                // 創建最近答案的顯示元素
                                 const lastAnswerDiv = document.createElement('div');
                                 lastAnswerDiv.className = 'last-answer';
                                 
-                                // 創建日期 badge
                                 const dateBadge = document.createElement('span');
                                 dateBadge.className = 'date-badge';
                                 dateBadge.textContent = answer.ModifiedDate;
                                 
-                                // 創建答案文字元素
                                 const answerText = document.createElement('div');
                                 answerText.textContent = '回答：' + answer.Answer;
                                 
-                                // 組合元素
                                 lastAnswerDiv.appendChild(dateBadge);
                                 lastAnswerDiv.appendChild(answerText);
                                 
-                                // 插入到問題輸入框之前
-                                questionInput.parentNode.insertBefore(lastAnswerDiv, questionInput);
+                                if (questionInput.type === 'radio' || questionInput.type === 'checkbox') {
+                                    const inputGroup = questionInput.closest('.radio-group, .checkbox-group');
+                                    if (inputGroup) {
+                                        inputGroup.parentNode.insertBefore(lastAnswerDiv, inputGroup.nextSibling);
+                                    }
+                                } else {
+                                    questionInput.parentNode.insertBefore(lastAnswerDiv, questionInput.nextSibling);
+                                }
                             }
                         });
                     }
