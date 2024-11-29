@@ -32,12 +32,14 @@ CREATE UNIQUE INDEX [IX_Vendors_UniformNumber] ON [dbo].[Vendors]
 GO
 
 -- 建立預存程序：新增廠商
-CREATE PROCEDURE [dbo].[sp_AddVendor]
+CREATE PROCEDURE [dbo].[usp_AddVendor]
     @ParentCode char(3),
     @ChildCode char(3),
     @UniformNumber char(8),
     @VendorName nvarchar(100),
     @ContactPerson nvarchar(100),
+    @LogisticsContact nvarchar(100),
+    @MarketingContact nvarchar(100),
     @Phone varchar(15),
     @Address nvarchar(100),
     @Email varchar(100),
@@ -61,11 +63,13 @@ BEGIN
     
     INSERT INTO [dbo].[Vendors] (
         ParentCode, ChildCode, UniformNumber, VendorName, 
-        ContactPerson, Phone, Address, Email, Website
+        ContactPerson, LogisticsContact, MarketingContact,
+        Phone, Address, Email, Website
     )
     VALUES (
         @ParentCode, @ChildCode, @UniformNumber, @VendorName,
-        @ContactPerson, @Phone, @Address, @Email, @Website
+        @ContactPerson, @LogisticsContact, @MarketingContact,
+        @Phone, @Address, @Email, @Website
     )
     
     SELECT SCOPE_IDENTITY() AS VendorID
@@ -73,10 +77,12 @@ END
 GO
 
 -- 建立預存程序：更新廠商
-CREATE PROCEDURE [dbo].[sp_UpdateVendor]
+CREATE PROCEDURE [dbo].[usp_UpdateVendor]
     @VendorID int,
     @VendorName nvarchar(100),
     @ContactPerson nvarchar(100),
+    @LogisticsContact nvarchar(100),
+    @MarketingContact nvarchar(100),
     @Phone varchar(15),
     @Address nvarchar(100),
     @Email varchar(100),
@@ -89,6 +95,8 @@ BEGIN
     UPDATE [dbo].[Vendors]
     SET VendorName = @VendorName,
         ContactPerson = @ContactPerson,
+        LogisticsContact = @LogisticsContact,
+        MarketingContact = @MarketingContact,
         Phone = @Phone,
         Address = @Address,
         Email = @Email,
@@ -99,7 +107,7 @@ END
 GO
 
 -- 建立預存程序：刪除廠商（軟刪除）
-CREATE PROCEDURE [dbo].[sp_DeleteVendor]
+CREATE PROCEDURE [dbo].[usp_DeleteVendor]
     @VendorID int,
     @ModifiedBy int
 AS

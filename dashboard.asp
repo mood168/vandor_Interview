@@ -38,7 +38,7 @@ End If
     <link rel="stylesheet" href="styles/dashboard.css">
     <style>
         .search-container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 50px auto;
             padding: 20px;
         }
@@ -103,11 +103,15 @@ End If
 
         /* 新增廠商表單樣式 */
         .add-vendor-form {
+            display: none; /* 預設隱藏表單 */
             margin-top: 30px;
             padding: 20px;
             border-radius: 8px;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .add-vendor-form h2 {
             margin-bottom: 20px;
@@ -181,6 +185,13 @@ End If
                         $('.search-results-container').html(response);
                         // 為新加載的表格行加入點擊事件
                         bindTableRowClick();
+                        
+                        // 檢查是否有搜尋結果
+                        if ($('.search-results tbody tr').length === 0 && keyword.trim() !== '') {
+                            $('.add-vendor-form').show();
+                        } else {
+                            $('.add-vendor-form').hide();
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('搜尋發生錯誤:', error);
@@ -216,11 +227,12 @@ End If
                     <button type="button" class="search-button" onclick="window.location.href='dashboard.asp'">清除</button>                    
                 </div>
 
-                <!-- 新增一個容器來顯示搜尋結果 -->
+                <!-- 搜尋結果容器 -->
                 <div class="search-results-container">
-                    <!-- 移除這裡的初始表單顯示邏輯，改由 search_vendors.asp 控制 -->
+                    <!-- 由 search_vendors.asp 控制內容 -->
                 </div>
             </div>
+            
         </main>
     </div>
 </body>

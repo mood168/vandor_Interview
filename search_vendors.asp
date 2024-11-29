@@ -17,7 +17,7 @@ If Len(searchKeyword) > 0 Then
     sql = "SELECT ParentCode, ChildCode, VendorName, UniformNumber FROM Vendors " & _
           "WHERE ParentCode LIKE '%" & searchKeyword & "%' " & _
           "OR ChildCode LIKE '%" & searchKeyword & "%' " & _
-          "OR VendorName LIKE '%" & searchKeyword & "%' " & _
+          "OR VendorName LIKE N'%" & searchKeyword & "%' " & _
           "OR UniformNumber LIKE '%" & searchKeyword & "%' " & _
           "ORDER BY ParentCode, ChildCode"
     
@@ -77,8 +77,16 @@ If Len(searchKeyword) > 0 Then
                     <input type="text" id="vendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-field">
-                    <label for="contactPerson">聯絡人</label>
+                    <label for="contactPerson">客服聯絡人</label>
                     <input type="text" id="contactPerson" name="contactPerson" maxlength="100">
+                </div>
+                <div class="form-field">
+                    <label for="logisticsContact">物流聯絡人</label>
+                    <input type="text" id="logisticsContact" name="logisticsContact" maxlength="100">
+                </div>
+                <div class="form-field">
+                    <label for="marketingContact">行銷聯絡人</label>
+                    <input type="text" id="marketingContact" name="marketingContact" maxlength="100">
                 </div>
                 <div class="form-field">
                     <label for="phone">電話</label>
@@ -98,7 +106,7 @@ If Len(searchKeyword) > 0 Then
                 </div>
                 <div class="form-buttons">
                     <button type="button" class="form-button" onclick="window.location.href='dashboard.asp'">取消</button>
-                    <button type="submit" class="form-button primary">儲存</button>
+                    <button type="submit" class="form-button">儲存</button>
                 </div>
             </form>
         </div>

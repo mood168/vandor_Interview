@@ -383,19 +383,25 @@ End If
                 },
                 body: formData.toString()
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    sessionStorage.setItem('selectedCompany', companyName);
-                    sessionStorage.setItem('visitDate', visitDate);
-                    window.location.reload();
-                } else {
-                    alert(data.message || '儲存失敗');
+            .then(response => response.text())
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    if (data.success) {
+                        alert('儲存成功');
+                        const companySelect = document.getElementById('companyName');
+                        companySelect.dispatchEvent(new Event('change'));
+                    } else {
+                        alert(data.message || '儲存失敗');
+                    }
+                } catch (error) {
+                    console.error('回應內容:', text);
+                    alert('處理回應時發生錯誤：' + error.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('儲存時發生錯誤');
+                alert('儲存時發生錯誤：' + error.message);
             });
         }
 
@@ -451,44 +457,61 @@ End If
             const companyName = this.value;
             if (!companyName) return;
 
-            // 清除所有現的最近答案示
+            // 清除所有現有的最近答案顯示
             document.querySelectorAll('.last-answer').forEach(el => el.remove());
 
             // 獲取所有問題的最近答案
             fetch(`get_last_answers.asp?companyName=${encodeURIComponent(companyName)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        data.answers.forEach(answer => {
-                            const questionInput = document.querySelector(`[name="q_${answer.QuestionID}"]`);
-                            if (questionInput) {
-                                const lastAnswerDiv = document.createElement('div');
-                                lastAnswerDiv.className = 'last-answer';
-                                
-                                const dateBadge = document.createElement('span');
-                                dateBadge.className = 'date-badge';
-                                dateBadge.textContent = answer.ModifiedDate;
-                                
-                                const answerText = document.createElement('div');
-                                answerText.textContent = '回答：' + answer.Answer;
-                                
-                                lastAnswerDiv.appendChild(dateBadge);
-                                lastAnswerDiv.appendChild(answerText);
-                                
-                                if (questionInput.type === 'radio' || questionInput.type === 'checkbox') {
-                                    const inputGroup = questionInput.closest('.radio-group, .checkbox-group');
-                                    if (inputGroup) {
-                                        inputGroup.parentNode.insertBefore(lastAnswerDiv, inputGroup.nextSibling);
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success) {
+                            if (data.answers && data.answers.length > 0) {
+                                data.answers.forEach(answer => {
+                                    const questionInput = document.querySelector(`[name="q_${answer.QuestionID}"]`);
+                                    if (questionInput) {
+                                        const lastAnswerDiv = document.createElement('div');
+                                        lastAnswerDiv.className = 'last-answer';
+                                        
+                                        const dateBadge = document.createElement('span');
+                                        dateBadge.className = 'date-badge';
+                                        dateBadge.textContent = answer.ModifiedDate;
+                                        
+                                        const answerText = document.createElement('div');
+                                        answerText.textContent = '回答：' + answer.Answer;
+                                        
+                                        lastAnswerDiv.appendChild(dateBadge);
+                                        lastAnswerDiv.appendChild(answerText);
+                                        
+                                        if (questionInput.type === 'radio' || questionInput.type === 'checkbox') {
+                                            const inputGroup = questionInput.closest('.radio-group, .checkbox-group');
+                                            if (inputGroup) {
+                                                inputGroup.parentNode.insertBefore(lastAnswerDiv, inputGroup.nextSibling);
+                                            }
+                                        } else {
+                                            questionInput.parentNode.insertBefore(lastAnswerDiv, questionInput.nextSibling);
+                                        }
                                     }
-                                } else {
-                                    questionInput.parentNode.insertBefore(lastAnswerDiv, questionInput.nextSibling);
-                                }
+                                });
+                            } else {
+                                console.log('沒有找到最近的答案');
                             }
-                        });
+                        } else {
+                            console.error('API 回傳錯誤:', data.message);
+                        }
+                    } catch (e) {
+                        console.error('解析回應時發生錯誤:', e);
+                        console.error('原始回應:', text);
                     }
                 })
                 .catch(error => {
-                    console.error('Error fetching last answers:', error);
+                    console.error('取得最近答案時發生錯誤:', error);
                 });
         });
 
@@ -589,20 +612,25 @@ End If
                     },
                     body: formData.toString()
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('儲存成功');
-                        // 重新載入最近答案
-                        const companySelect = document.getElementById('companyName');
-                        companySelect.dispatchEvent(new Event('change'));
-                    } else {
-                        alert(data.message || '儲存失敗');
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success) {
+                            alert('儲存成功');
+                            const companySelect = document.getElementById('companyName');
+                            companySelect.dispatchEvent(new Event('change'));
+                        } else {
+                            alert(data.message || '儲存失敗');
+                        }
+                    } catch (error) {
+                        console.error('回應內容:', text);
+                        alert('處理回應時發生錯誤：' + error.message);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('儲存時發生錯誤');
+                    alert('儲存時發生錯誤：' + error.message);
                 });
             } catch (error) {
                 console.error('Error processing answer:', error);

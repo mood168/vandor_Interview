@@ -34,7 +34,7 @@ VALUES
 GO
 
 -- 建立預存程序：使用者登入驗證
-CREATE PROCEDURE [dbo].[sp_UserLogin]
+CREATE PROCEDURE [dbo].[usp_UserLogin]
     @Username nvarchar(50),
     @Password nvarchar(255),
     @LoginIP varchar(50) = NULL

@@ -15,7 +15,8 @@ End Function
 On Error Resume Next
 
 ' 取得表單資料
-Dim vendorId, parentCode, childCode, uniformNumber, vendorName, contactPerson, phone, address, email, website
+Dim vendorId, parentCode, childCode, uniformNumber, vendorName, contactPerson
+Dim logisticsContact, marketingContact, phone, address, email, website
 
 ' 檢查是新增還是編輯表單
 vendorId = Request.Form("vendorId")
@@ -24,11 +25,14 @@ childCode = Request.Form("childCode")
 uniformNumber = Request.Form("uniformNumber")
 vendorName = Request.Form("vendorName")
 contactPerson = Request.Form("contactPerson")
+logisticsContact = Request.Form("logisticsContact")
+marketingContact = Request.Form("marketingContact")
 phone = Request.Form("phone")
 address = Request.Form("address")
 email = Request.Form("email")
 website = Request.Form("website")
 searchKeyword = Request.Form("searchKeyword")
+
 ' 基本驗證
 If parentCode = "" Then HandleError("母代號不能為空")
 If childCode = "" Then HandleError("子代號不能為空")
@@ -41,7 +45,7 @@ Function SafeSQL(str)
     If IsNull(str) Or str = "" Then
         SafeSQL = "NULL"
     Else
-        SafeSQL = "'" & Replace(str, "'", "''") & "'"
+        SafeSQL = "N'" & Replace(str, "'", "''") & "'"
     End If
 End Function
 
@@ -49,12 +53,14 @@ Dim sql
 If vendorId = "" Then
     ' 新增廠商
     sql = "INSERT INTO Vendors (ParentCode, ChildCode, UniformNumber, VendorName, ContactPerson, " & _
-          "Phone, Address, Email, Website, IsActive, CreatedDate) VALUES (" & _
+          "LogisticsContact, MarketingContact, Phone, Address, Email, Website, IsActive, CreatedDate) VALUES (" & _
           SafeSQL(parentCode) & ", " & _
           SafeSQL(childCode) & ", " & _
           SafeSQL(uniformNumber) & ", " & _
           SafeSQL(vendorName) & ", " & _
           SafeSQL(contactPerson) & ", " & _
+          SafeSQL(logisticsContact) & ", " & _
+          SafeSQL(marketingContact) & ", " & _
           SafeSQL(phone) & ", " & _
           SafeSQL(address) & ", " & _
           SafeSQL(email) & ", " & _
@@ -68,6 +74,8 @@ Else
           "UniformNumber = " & SafeSQL(uniformNumber) & ", " & _
           "VendorName = " & SafeSQL(vendorName) & ", " & _
           "ContactPerson = " & SafeSQL(contactPerson) & ", " & _
+          "LogisticsContact = " & SafeSQL(logisticsContact) & ", " & _
+          "MarketingContact = " & SafeSQL(marketingContact) & ", " & _
           "Phone = " & SafeSQL(phone) & ", " & _
           "Address = " & SafeSQL(address) & ", " & _
           "Email = " & SafeSQL(email) & ", " & _
@@ -85,6 +93,7 @@ End If
 
 ' 成功回應
 Response.Write "{""success"": true, ""message"": ""資料儲存成功""}"
+
 ' 檢查來源頁面並導回
 If Request.ServerVariables("HTTP_REFERER") <> "" Then
     If InStr(Request.ServerVariables("HTTP_REFERER"), "dashboard.asp") > 0 Then

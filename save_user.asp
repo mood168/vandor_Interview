@@ -30,7 +30,7 @@ Function SafeSQL(str)
     If IsNull(str) Or str = "" Then
         SafeSQL = "NULL"
     Else
-        SafeSQL = "'" & Replace(str, "'", "''") & "'"
+        SafeSQL = "N'" & Replace(str, "'", "''") & "'"
     End If
 End Function
 

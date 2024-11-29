@@ -24,6 +24,20 @@
             %>" style="font-size: 1.2rem;">
                 <span class="icon">🏠</span>首頁
             </a></li>
+            <li><a href="visit_questions.asp" class="<%
+            If Request.ServerVariables("SCRIPT_NAME") = "/visit_questions.asp" Then
+                Response.Write("active")
+            End If
+            %>" style="font-size: 1.2rem;">
+                <span class="icon">📝</span>訪廠記錄
+            </a></li>
+            <li><a href="visit_management.asp" class="<%
+            If Request.ServerVariables("SCRIPT_NAME") = "/visit_management.asp" Then
+                Response.Write("active")
+            End If
+            %>" style="font-size: 1.2rem;">
+                <span class="icon">📅</span>訪廠管理
+            </a></li>
             <li><a href="user_management.asp" class="<%
             If Request.ServerVariables("SCRIPT_NAME") = "/user_management.asp" Then
                 Response.Write("active")
@@ -37,22 +51,7 @@
             End If
             %>" style="font-size: 1.2rem;">
                 <span class="icon">🏢</span>廠商管理
-            </a></li>
-            <li><a href="visit_management.asp" class="<%
-            If Request.ServerVariables("SCRIPT_NAME") = "/visit_management.asp" Then
-                Response.Write("active")
-            End If
-            %>" style="font-size: 1.2rem;">
-                <span class="icon">📅</span>訪廠管理
-            </a></li>
-            <li><a href="visit_questions.asp" class="<%
-            If Request.ServerVariables("SCRIPT_NAME") = "/visit_questions.asp" Then
-                Response.Write("active")
-            End If
-            %>" style="font-size: 1.2rem;">
-                <span class="icon">📝</span>訪廠記錄
-            </a></li>
-            <li><a href="#" style="font-size: 1.2rem;"><span class="icon">⚙️</span>系統設定</a></li>
+            </a></li>          
             <li><a href="logout.asp" style="font-size: 1.2rem;"><span class="icon">🚪</span>登出</a></li>
         </ul>
     </nav>

@@ -4,71 +4,63 @@
 Response.CharSet = "utf-8"
 Response.ContentType = "application/json"
 
+Function HandleError(message)
+    Response.Clear
+    Response.Write "{""success"": false, ""message"": """ & Replace(message, """", "\""") & """}"
+    Response.End
+End Function
+
 ' 檢查登入狀態
 If Session("UserID") = "" Then
-    Response.Write "{""success"":false,""message"":""未登入""}"
-    Response.End
+    HandleError "請先登入系統"
 End If
 
 ' 取得公司名稱
-Dim companyName
 companyName = Request.QueryString("companyName")
-
 If companyName = "" Then
-    Response.Write "{""success"":false,""message"":""未提供公司名稱""}"
-    Response.End
+    HandleError "未提供公司名稱"
 End If
 
 On Error Resume Next
 
-' SQL 注入防護
-Function SafeSQL(str)
-    SafeSQL = "'" & Replace(str, "'", "''") & "'"
-End Function
-
 ' 查詢最近的答案
-Dim sql
-sql = "WITH LastAnswers AS (" & _
-      "  SELECT " & _
-      "    va.QuestionID, " & _
-      "    va.Answer, " & _
-      "    va.ModifiedDate, " & _
-      "    ROW_NUMBER() OVER (PARTITION BY va.QuestionID ORDER BY va.ModifiedDate DESC) as rn " & _
-      "  FROM VisitAnswers va " & _
-      "  INNER JOIN VisitRecords vr ON va.VisitID = vr.VisitID " & _
-      "  WHERE vr.CompanyName = " & SafeSQL(companyName) & _
+sql = "SELECT va.QuestionID, va.Answer, " & _
+      "FORMAT(va.ModifiedDate, 'yyyy-MM-dd') AS ModifiedDate " & _
+      "FROM VisitAnswers va " & _
+      "INNER JOIN VisitRecords vr ON va.VisitID = vr.VisitID " & _
+      "WHERE vr.CompanyName = N'" & Replace(companyName, "'", "''") & "' " & _
+      "AND va.ModifiedDate = ( " & _
+      "    SELECT MAX(va2.ModifiedDate) " & _
+      "    FROM VisitAnswers va2 " & _
+      "    INNER JOIN VisitRecords vr2 ON va2.VisitID = vr2.VisitID " & _
+      "    WHERE vr2.CompanyName = vr.CompanyName " & _
+      "    AND va2.QuestionID = va.QuestionID " & _
       ") " & _
-      "SELECT QuestionID, Answer, ModifiedDate " & _
-      "FROM LastAnswers " & _
-      "WHERE rn = 1"
+      "ORDER BY va.QuestionID"
 
-Dim rs
 Set rs = conn.Execute(sql)
 
 If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""資料庫錯誤: " & Server.HTMLEncode(Err.Description) & """}"
-    Response.End
+    HandleError "查詢答案時發生錯誤: " & Err.Description
 End If
 
 ' 組織 JSON 回應
-Response.Write "{""success"":true,""answers"":["
+Response.Write "{""success"": true, ""answers"": ["
 
-Dim isFirst : isFirst = True
-
+isFirst = True
 Do While Not rs.EOF
     If Not isFirst Then Response.Write ","
-    Response.Write "{""QuestionID"":" & rs("QuestionID") & ","
-    Response.Write """Answer"":""" & Replace(rs("Answer"), """", "\""") & ""","
-    Response.Write """ModifiedDate"":""" & Year(rs("ModifiedDate")) & "-" & _
-                                         Right("0" & Month(rs("ModifiedDate")), 2) & "-" & _
-                                         Right("0" & Day(rs("ModifiedDate")), 2) & """}"
+    Response.Write "{"
+    Response.Write """QuestionID"": " & rs("QuestionID") & ","
+    Response.Write """Answer"": """ & Replace(rs("Answer"), """", "\""") & ""","
+    Response.Write """ModifiedDate"": """ & rs("ModifiedDate") & """"
+    Response.Write "}"
     isFirst = False
     rs.MoveNext
 Loop
 
 Response.Write "]}"
 
-' 清理資源
 rs.Close
 Set rs = Nothing
 conn.Close

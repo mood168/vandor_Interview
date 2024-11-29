@@ -109,8 +109,16 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                     <input type="text" id="vendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-group">
-                    <label for="contactPerson">聯絡人</label>
+                    <label for="contactPerson">客服聯絡人</label>
                     <input type="text" id="contactPerson" name="contactPerson" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="logisticsContact">物流聯絡人</label>
+                    <input type="text" id="logisticsContact" name="logisticsContact" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="marketingContact">行銷聯絡人</label>
+                    <input type="text" id="marketingContact" name="marketingContact" maxlength="100">
                 </div>
                 <div class="form-group">
                     <label for="phone">電話</label>
@@ -164,8 +172,16 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                     <input type="text" id="editVendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-group">
-                    <label for="editContactPerson">聯絡人</label>
+                    <label for="editContactPerson">客服聯絡人</label>
                     <input type="text" id="editContactPerson" name="contactPerson" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLogisticsContact">物流聯絡人</label>
+                    <input type="text" id="editLogisticsContact" name="logisticsContact" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="editMarketingContact">行銷聯絡人</label>
+                    <input type="text" id="editMarketingContact" name="marketingContact" maxlength="100">
                 </div>
                 <div class="form-group">
                     <label for="editPhone">電話</label>
@@ -221,7 +237,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                 const uniformNumber = row.cells[1].textContent.toLowerCase(); // 統一編號
                 const vendorName = row.cells[2].textContent.toLowerCase(); // 廠商名稱
                 
-                // 檢查是否符合任一搜尋條件
+                // 檢查是否���合任一搜尋條件
                 const matchCode = code.includes(searchText.replace('-', '')); // 移除連字符進行比對
                 const matchUniformNumber = uniformNumber.includes(searchText);
                 const matchVendorName = vendorName.includes(searchText);
@@ -255,33 +271,37 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
         // 編輯廠商
         function editVendor(vendorId) {
             fetch(`get_vendor.asp?id=${vendorId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('editVendorId').value = data.VendorID;
-                        document.getElementById('editParentCode').value = data.ParentCode;
-                        document.getElementById('editChildCode').value = data.ChildCode;
-                        document.getElementById('editUniformNumber').value = data.UniformNumber;
-                        document.getElementById('editVendorName').value = data.VendorName;
-                        document.getElementById('editContactPerson').value = data.ContactPerson;
-                        document.getElementById('editPhone').value = data.Phone || '';
-                        document.getElementById('editAddress').value = data.Address || '';
-                        document.getElementById('editEmail').value = data.Email || '';
-                        document.getElementById('editWebsite').value = data.Website || '';
-                        
-                        showEditVendorModal();
-                    } else {
-                        alert(data.message);
+                .then(response => response.text())  // 先取得原始回應文字
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);  // 嘗試解析 JSON
+                        if (data.success) {
+                            document.getElementById('editVendorId').value = data.VendorID;
+                            document.getElementById('editParentCode').value = data.ParentCode;
+                            document.getElementById('editChildCode').value = data.ChildCode;
+                            document.getElementById('editUniformNumber').value = data.UniformNumber;
+                            document.getElementById('editVendorName').value = data.VendorName;
+                            document.getElementById('editContactPerson').value = data.ContactPerson;
+                            document.getElementById('editLogisticsContact').value = data.LogisticsContact || '';
+                            document.getElementById('editMarketingContact').value = data.MarketingContact || '';
+                            document.getElementById('editPhone').value = data.Phone || '';
+                            document.getElementById('editAddress').value = data.Address || '';
+                            document.getElementById('editEmail').value = data.Email || '';
+                            document.getElementById('editWebsite').value = data.Website || '';
+                            
+                            showEditVendorModal();
+                        } else {
+                            alert(data.message || '載入廠商資料失敗');
+                        }
+                    } catch (e) {
+                        console.error('JSON 解析錯誤:', e);
+                        console.error('收到的回應:', text);
+                        alert('資料格式錯誤，請聯絡系統管理員');
                     }
                 })
                 .catch(error => {
-                    console.error('Error fetching vendor data:', error);
-                    alert('載入廠商資料時發生錯誤');
+                    console.error('網路錯誤:', error);
+                    alert('載入廠商資料時發生錯誤，請稍後再試');
                 });
         }
     </script>

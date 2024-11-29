@@ -1,87 +1,106 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
 <%
+Response.Clear
 Response.CharSet = "utf-8"
 Response.ContentType = "application/json"
 
+Function HandleError(message)
+    Response.Clear
+    Response.Write "{""success"": false, ""message"": """ & Replace(message, """", "\""") & """}"
+    Response.End
+End Function
+
+Function LogDebug(message)
+    ' 將除錯訊息寫入伺服器日誌檔，而不是輸出到回應中
+    Dim fso, debugFile
+    Set fso = Server.CreateObject("Scripting.FileSystemObject")
+    Set debugFile = fso.OpenTextFile(Server.MapPath("debug.log"), 8, True)
+    debugFile.WriteLine(Now() & " - " & message)
+    debugFile.Close
+    Set debugFile = Nothing
+    Set fso = Nothing
+End Function
+
 ' 檢查登入狀態
 If Session("UserID") = "" Then
-    Response.Write "{""success"":false,""message"":""未登入""}"
-    Response.End
+    HandleError "未登入"
 End If
 
 ' 取得表單資料
-Dim companyName, questionId, answer, visitDate
-companyName = Request.Form("companyName")
-questionId = Request.Form("questionId")
-answer = Request.Form("answer")
-visitDate = Request.Form("visitDate")
+Dim visitId, companyName, visitorId, interviewee, visitDate, status
+visitId = Request.Form("editVisitId")
+companyName = Trim(Request.Form("editCompanyName"))
+visitorId = Trim(Request.Form("editVisitorId"))
+interviewee = Trim(Request.Form("editInterviewee"))
+visitDate = Trim(Request.Form("editVisitDate"))
+status = Trim(Request.Form("editStatus"))
 
-If companyName = "" Or questionId = "" Or answer = "" Or visitDate = "" Then
-    Response.Write "{""success"":false,""message"":""缺少必要參數""}"
-    Response.End
+' 驗證必要參數
+If visitId = "" Then
+    ' 如果是新增模式，檢查公司名稱
+    If companyName = "" Then 
+        HandleError "請輸入公司名稱"
+    End If
 End If
+
+If visitorId = "" Then HandleError "請選擇訪廠人員"
+If visitDate = "" Then HandleError "請選擇訪廠日期"
+If status = "" Then HandleError "請選擇狀態"
 
 ' SQL 注入防護
 Function SafeSQL(str)
     If IsNull(str) Or str = "" Then
         SafeSQL = "NULL"
     Else
-        SafeSQL = "'" & Replace(str, "'", "''") & "'"
+        SafeSQL = "N'" & Replace(str, "'", "''") & "'"
     End If
 End Function
 
 On Error Resume Next
 
-' 先檢查是否已有訪廠記錄
-Dim sql, rs, visitId
-sql = "SELECT VisitID FROM VisitRecords " & _
-      "WHERE CompanyName = " & SafeSQL(companyName) & " " & _
-      "AND CONVERT(date, VisitDate) = CONVERT(date, " & SafeSQL(visitDate) & ")"
-
-Set rs = conn.Execute(sql)
-
-If rs.EOF Then
-    ' 建立新的訪廠記錄
-    sql = "INSERT INTO VisitRecords (CompanyName, VisitDate, VisitorID, Status) " & _
-          "VALUES (" & SafeSQL(companyName) & ", " & SafeSQL(visitDate) & ", " & _
-          Session("UserID") & ", 'Draft'); SELECT SCOPE_IDENTITY() AS NewID"
-    
-    Set rs = conn.Execute(sql)
-    visitId = rs("NewID")
-Else
-    visitId = rs("VisitID")
+' 如果是編輯模式，先取得原有的公司名稱
+If visitId <> "" Then
+    Dim rs
+    Set rs = conn.Execute("SELECT CompanyName FROM VisitRecords WHERE VisitID = " & CLng(visitId))
+    If Not rs.EOF Then
+        companyName = rs("CompanyName")
+        LogDebug("Found existing CompanyName = " & companyName)
+    End If
+    rs.Close
+    Set rs = Nothing
 End If
 
-' 更新答案
-sql = "MERGE VisitAnswers AS target " & _
-      "USING (SELECT " & visitId & " AS VisitID, " & questionId & " AS QuestionID) AS source " & _
-      "ON target.VisitID = source.VisitID AND target.QuestionID = source.QuestionID " & _
-      "WHEN MATCHED THEN " & _
-      "    UPDATE SET Answer = " & SafeSQL(answer) & ", ModifiedDate = GETDATE() " & _
-      "WHEN NOT MATCHED THEN " & _
-      "    INSERT (VisitID, QuestionID, Answer) " & _
-      "    VALUES (" & visitId & ", " & questionId & ", " & SafeSQL(answer) & ");"
+' 更新或新增訪廠記錄
+Dim sql
+If visitId <> "" Then
+    ' 更新現有記錄
+    sql = "UPDATE VisitRecords SET " & _
+          "VisitorID = " & visitorId & ", " & _
+          "Interviewee = " & SafeSQL(interviewee) & ", " & _
+          "VisitDate = " & SafeSQL(visitDate) & ", " & _
+          "Status = " & SafeSQL(status) & ", " & _
+          "ModifiedDate = GETDATE() " & _
+          "WHERE VisitID = " & CLng(visitId)
+Else
+    ' 新增記錄
+    sql = "INSERT INTO VisitRecords (CompanyName, VisitorID, Interviewee, VisitDate, Status, CreatedDate) " & _
+          "VALUES (" & SafeSQL(companyName) & ", " & visitorId & ", " & _
+          SafeSQL(interviewee) & ", " & SafeSQL(visitDate) & ", " & SafeSQL(status) & ", GETDATE())"
+End If
 
-conn.Execute sql
-
-' 更新歷史記錄
-sql = "INSERT INTO VisitAnswerHistory (QuestionID, VendorID, Answer, CreatedBy) " & _
-      "SELECT " & questionId & ", v.VendorID, " & SafeSQL(answer) & ", " & Session("UserID") & " " & _
-      "FROM Vendors v WHERE v.VendorName = " & SafeSQL(companyName)
+LogDebug("SQL = " & sql)
 
 conn.Execute sql
 
 If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""資料庫錯誤: " & Server.HTMLEncode(Err.Description) & """}"
-Else
-    Response.Write "{""success"":true,""message"":""答案儲存成功"",""visitId"":" & visitId & "}"
+    HandleError "資料庫錯誤: " & Server.HTMLEncode(Err.Description) & " SQL: " & sql
+    Response.End
 End If
 
-If IsObject(rs) Then
-    rs.Close
-    Set rs = Nothing
-End If
+' 回傳成功訊息
+Response.Clear
+Response.Write "{""success"": true, ""message"": ""訪廠記錄儲存成功""}"
 
 conn.Close
 Set conn = Nothing

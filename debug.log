@@ -1,0 +1,30 @@
+2024/11/29 と 09:30:21 - Form Field: editVisitId = 2
+2024/11/29 と 09:30:21 - Form Field: editVisitorId = 1
+2024/11/29 と 09:30:21 - Form Field: editVisitDate = 2024-11-29
+2024/11/29 と 09:30:21 - Form Field: editCompanyName = 此
+2024/11/29 と 09:30:21 - Form Field: editInterviewee = ρ馏甉
+2024/11/29 と 09:30:21 - Form Field: editStatus = Draft
+2024/11/29 と 09:30:21 - Processed Variables:
+2024/11/29 と 09:30:21 - visitId = 2
+2024/11/29 と 09:30:21 - companyName = 此
+2024/11/29 と 09:30:21 - visitorId = 1
+2024/11/29 と 09:30:21 - interviewee = ρ馏甉
+2024/11/29 と 09:30:21 - visitDate = 2024-11-29
+2024/11/29 と 09:30:21 - status = Draft
+2024/11/29 と 09:30:21 - Found existing CompanyName = 此
+2024/11/29 と 09:30:21 - SQL = UPDATE VisitRecords SET VisitorID = 1, Interviewee = N'ρ馏甉', VisitDate = N'2024-11-29', Status = N'Draft', ModifiedDate = GETDATE() WHERE VisitID = 2
+2024/11/29 と 09:30:34 - Form Field: editVisitId = 1
+2024/11/29 と 09:30:34 - Form Field: editVisitorId = 1
+2024/11/29 と 09:30:34 - Form Field: editVisitDate = 2024-11-29
+2024/11/29 と 09:30:34 - Form Field: editCompanyName = 此
+2024/11/29 と 09:30:34 - Form Field: editInterviewee = ρ馏甉
+2024/11/29 と 09:30:34 - Form Field: editStatus = Draft
+2024/11/29 と 09:30:34 - Processed Variables:
+2024/11/29 と 09:30:34 - visitId = 1
+2024/11/29 と 09:30:34 - companyName = 此
+2024/11/29 と 09:30:34 - visitorId = 1
+2024/11/29 と 09:30:34 - interviewee = ρ馏甉
+2024/11/29 と 09:30:34 - visitDate = 2024-11-29
+2024/11/29 と 09:30:34 - status = Draft
+2024/11/29 と 09:30:34 - Found existing CompanyName = 此
+2024/11/29 と 09:30:34 - SQL = UPDATE VisitRecords SET VisitorID = 1, Interviewee = N'ρ馏甉', VisitDate = N'2024-11-29', Status = N'Draft', ModifiedDate = GETDATE() WHERE VisitID = 1

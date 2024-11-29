@@ -1,150 +1,159 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
 <%
+Response.Clear
 Response.CharSet = "utf-8"
 Response.ContentType = "application/json"
 
+' 關閉錯誤頁面
+Server.ScriptTimeout = 300
+Response.Buffer = True
+On Error Resume Next
+
+Function HandleError(message)
+    On Error Resume Next
+    Response.Clear
+    Response.Write "{""success"": false, ""message"": """ & Replace(message, """", "\""") & """}"
+    Response.End
+End Function
+
 ' 檢查登入狀態
 If Session("UserID") = "" Then
-    Response.Write "{""success"":false,""message"":""未登入""}"
-    Response.End
+    HandleError "請先登入系統"
 End If
 
 ' 取得表單資料
 Dim questionId, companyName, answer, visitDate
 questionId = Request.Form("questionId")
-companyName = Request.Form("companyName")
-answer = Replace(Replace(Request.Form("answer"), "%,元", "元"), "|", "")
+companyName = Trim(Request.Form("companyName"))
+answer = Trim(Request.Form("answer"))
 visitDate = Request.Form("visitDate")
 
 ' 基本驗證
-If questionId = "" Then
-    Response.Write "{""success"":false,""message"":""未提供問題ID""}"
+If questionId = "" Then HandleError "未提供問題ID"
+If companyName = "" Then HandleError "未提供公司名稱"
+If answer = "" Then HandleError "未提供答案"
+If visitDate = "" Then HandleError "未提供訪談日期"
+
+Dim vendorId, visitId
+
+' 先查詢廠商ID
+Dim sql
+sql = "SELECT VendorID FROM Vendors WHERE VendorName = N'" & Replace(companyName, "'", "''") & "' AND IsActive = 1"
+Set rs = Server.CreateObject("ADODB.Recordset")
+rs.Open sql, conn, 1, 1
+
+If Err.Number <> 0 Then
+    HandleError "查詢廠商資料時發生錯誤: " & Err.Description & " SQL: " & sql
     Response.End
 End If
-
-If companyName = "" Then
-    Response.Write "{""success"":false,""message"":""未提供公司名稱""}"
-    Response.End
-End If
-
-If answer = "" Then
-    Response.Write "{""success"":false,""message"":""答案不能為空""}"
-    Response.End
-End If
-
-' SQL 注入防護
-Function SafeSQL(str)
-    If IsNull(str) Or str = "" Then
-        SafeSQL = "NULL"
-    Else
-        SafeSQL = "'" & Replace(str, "'", "''") & "'"
-    End If
-End Function
-
-On Error Resume Next
-
-' 先取得廠商ID
-Dim vendorId
-Set rs = conn.Execute("SELECT VendorID FROM Vendors WHERE VendorName = " & SafeSQL(companyName))
 
 If rs.EOF Then
-    Response.Write "{""success"":false,""message"":""找不到對應的廠商資料""}"
+    rs.Close
+    Set rs = Nothing
+    HandleError "找不到對應的廠商資料：" & companyName
     Response.End
 End If
 
 vendorId = rs("VendorID")
+rs.Close
+Set rs = Nothing
 
-' 檢查是否已存在訪廠記錄
-Dim rsCheck, visitId
-Set rsCheck = conn.Execute("SELECT VisitID FROM VisitRecords " & _
-                          "WHERE CompanyName = " & SafeSQL(companyName) & " " & _
-                          "AND CONVERT(date, VisitDate) = CONVERT(date, " & SafeSQL(visitDate) & ")")
+' 開始交易
+conn.BeginTrans
+
+' 先查詢或建立訪廠記錄
+sql = "SELECT VisitID FROM VisitRecords " & _
+      "WHERE CompanyName = N'" & Replace(companyName, "'", "''") & "' " & _
+      "AND CONVERT(date, VisitDate) = CONVERT(date, '" & Replace(visitDate, "'", "''") & "')"
+
+Set rs = Server.CreateObject("ADODB.Recordset")
+rs.Open sql, conn, 1, 1
 
 If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""檢查訪廠記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+    conn.RollbackTrans
+    HandleError "查詢訪廠記錄時發生錯誤: " & Err.Description & " SQL: " & sql
     Response.End
 End If
 
-If rsCheck.EOF Then
-    ' 新增訪廠主表記錄
-    Dim sqlInsertVisit
-    sqlInsertVisit = "INSERT INTO VisitRecords (CompanyName, VisitDate, VisitorID, Status, CreatedDate) " & _
-                     "VALUES (" & SafeSQL(companyName) & ", " & _
-                     SafeSQL(visitDate) & ", " & _
-                     Session("UserID") & ", 'Draft', GETDATE()); " & _
-                     "SELECT SCOPE_IDENTITY() AS NewID"
+If rs.EOF Then
+    rs.Close
+    Set rs = Nothing
     
-    Set rsCheck = conn.Execute(sqlInsertVisit)
+    ' 建立新的訪廠記錄
+    sql = "INSERT INTO VisitRecords (CompanyName, VisitDate, VisitorID, Status, CreatedDate) " & _
+          "VALUES (N'" & Replace(companyName, "'", "''") & "', " & _
+          "CONVERT(datetime, '" & Replace(visitDate, "'", "''") & "'), " & _
+          Session("UserID") & ", 'Draft', GETDATE())"
+    
+    conn.Execute sql
     
     If Err.Number <> 0 Then
-        Response.Write "{""success"":false,""message"":""新增訪廠記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
+        conn.RollbackTrans
+        HandleError "建立訪廠記錄時發生錯誤: " & Err.Description & " SQL: " & sql
         Response.End
     End If
     
-    visitId = rsCheck("NewID")
+    ' 取得新建立的記錄ID
+    Set rs = Server.CreateObject("ADODB.Recordset")
+    sql = "SELECT VisitID FROM VisitRecords " & _
+          "WHERE CompanyName = N'" & Replace(companyName, "'", "''") & "' " & _
+          "AND CONVERT(date, VisitDate) = CONVERT(date, '" & Replace(visitDate, "'", "''") & "')"
+    
+    rs.Open sql, conn, 1, 1
+    
+    If Err.Number <> 0 Or rs.EOF Then
+        rs.Close
+        Set rs = Nothing
+        conn.RollbackTrans
+        HandleError "無法取得新建立的訪廠記錄ID"
+        Response.End
+    End If
+    
+    visitId = rs("VisitID")
+    rs.Close
+    Set rs = Nothing
 Else
-    visitId = rsCheck("VisitID")
-End If
-
-' 檢查是否已有答案
-Dim rsAnswer
-Set rsAnswer = conn.Execute("SELECT AnswerID FROM VisitAnswers WHERE VisitID = " & visitId & " AND QuestionID = " & questionId)
-
-If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""檢查答案時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
-    Response.End
-End If
-
-' 更新或插入答案
-Dim sqlAnswer
-If rsAnswer.EOF Then
-    ' 插入新答案
-    sqlAnswer = "INSERT INTO VisitAnswers (VisitID, QuestionID, Answer, ModifiedDate) " & _
-                "VALUES (" & visitId & ", " & questionId & ", " & SafeSQL(answer) & ", GETDATE())"
-Else
-    ' 更新現有答案
-    sqlAnswer = "UPDATE VisitAnswers SET " & _
-                "Answer = " & SafeSQL(answer) & ", " & _
-                "ModifiedDate = GETDATE() " & _
-                "WHERE VisitID = " & visitId & " AND QuestionID = " & questionId
-End If
-
-conn.Execute sqlAnswer
-
-If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""更新答案時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
-    Response.End
-End If
-
-' 新增歷史記錄
-Dim sqlHistory
-sqlHistory = "INSERT INTO VisitAnswerHistory (QuestionID, VendorID, Answer, CreatedBy) " & _
-            "VALUES (" & questionId & ", " & vendorId & ", " & SafeSQL(answer) & ", " & Session("UserID") & ")"
-
-conn.Execute sqlHistory
-
-If Err.Number <> 0 Then
-    Response.Write "{""success"":false,""message"":""新增歷史記錄時發生錯誤: " & Server.HTMLEncode(Err.Description) & """}"
-Else
-    Response.Write "{""success"":true,""message"":""答案儲存成功"",""visitId"":" & visitId & "}"
-End If
-
-' 清理資源
-If IsObject(rs) Then
+    visitId = rs("VisitID")
     rs.Close
     Set rs = Nothing
 End If
 
-If IsObject(rsCheck) Then
-    rsCheck.Close
-    Set rsCheck = Nothing
+' 更新或新增答案
+sql = "IF EXISTS (SELECT 1 FROM VisitAnswers WHERE VisitID = " & CStr(visitId) & " AND QuestionID = " & CStr(questionId) & ") " & _
+      "UPDATE VisitAnswers SET Answer = N'" & Replace(answer, "'", "''") & "', ModifiedDate = GETDATE() " & _
+      "WHERE VisitID = " & CStr(visitId) & " AND QuestionID = " & CStr(questionId) & " " & _
+      "ELSE " & _
+      "INSERT INTO VisitAnswers (VisitID, QuestionID, Answer, ModifiedDate) " & _
+      "VALUES (" & CStr(visitId) & ", " & CStr(questionId) & ", N'" & Replace(answer, "'", "''") & "', GETDATE())"
+
+conn.Execute sql
+
+If Err.Number <> 0 Then
+    conn.RollbackTrans
+    HandleError "儲存答案時發生錯誤: " & Err.Description & " SQL: " & sql
+    Response.End
 End If
 
-If IsObject(rsAnswer) Then
-    rsAnswer.Close
-    Set rsAnswer = Nothing
+' 寫入歷史記錄
+sql = "INSERT INTO VisitAnswerHistory (QuestionID, VendorID, Answer, CreatedBy, CreatedDate) " & _
+      "VALUES (" & CStr(questionId) & ", " & CStr(vendorId) & ", " & _
+      "N'" & Replace(answer, "'", "''") & "', " & Session("UserID") & ", GETDATE())"
+
+conn.Execute sql
+
+If Err.Number <> 0 Then
+    conn.RollbackTrans
+    HandleError "寫入歷史記錄時發生錯誤: " & Err.Description & " SQL: " & sql
+    Response.End
 End If
+
+' 提交交易
+conn.CommitTrans
+
+' 回傳成功訊息
+Response.Clear
+Response.Write "{""success"": true, ""message"": ""答案已儲存""}"
 
 conn.Close
 Set conn = Nothing

@@ -90,8 +90,8 @@ Set rs = conn.Execute(sql)
                                     <td class="actions">
                                         <a href="#" 
                                            class="edit-btn" onclick="editVisit(<%=rs("VisitID")%>)">編輯</a>
-                                        <a href="#" 
-                                           class="edit-btn">訪廠紀錄表</a>
+                                        <a href="print_visit.asp?id=<%=rs("VisitID")%>" 
+                                           class="edit-btn" target="_blank">訪廠紀錄表</a>
                                     </td>
                                 </tr>
                             <% 
@@ -132,14 +132,14 @@ Set rs = conn.Execute(sql)
         <div class="modal-content">
             <h2>編輯訪廠記錄</h2>
             <form id="editVisitForm" onsubmit="return saveVisit(event)">
-                <input type="hidden" id="editVisitId" name="visitId">
+                <input type="hidden" id="editVisitId" name="editVisitId">
                 <div class="form-group">
                     <label for="editCompanyName">公司名稱</label>
-                    <input type="text" id="editCompanyName" name="companyName" required>
+                    <input type="text" id="editCompanyName" name="editCompanyName" required>
                 </div>
                 <div class="form-group">
                     <label for="editVisitorId">訪廠人員</label>
-                    <select id="editVisitorId" name="visitorId" required>
+                    <select id="editVisitorId" name="editVisitorId" required>
                         <% 
                         Dim rsUsers
                         Set rsUsers = conn.Execute("SELECT UserID, FullName FROM Users WHERE IsActive = 1")
@@ -154,15 +154,15 @@ Set rs = conn.Execute(sql)
                 </div>
                 <div class="form-group">
                     <label for="editInterviewee">受訪人</label>
-                    <input type="text" id="editInterviewee" name="interviewee">
+                    <input type="text" id="editInterviewee" name="editInterviewee">
                 </div>
                 <div class="form-group">
                     <label for="editVisitDate">訪廠日期</label>
-                    <input type="date" id="editVisitDate" name="visitDate" required>
+                    <input type="date" id="editVisitDate" name="editVisitDate" required>
                 </div>
                 <div class="form-group">
                     <label for="editStatus">狀態</label>
-                    <select id="editStatus" name="status" required>
+                    <select id="editStatus" name="editStatus" required>
                         <option value="Draft">草稿</option>
                         <option value="Completed">完成</option>
                         <option value="Reviewed">已審核</option>
@@ -185,9 +185,10 @@ Set rs = conn.Execute(sql)
                 if (data.success) {
                     document.getElementById('editVisitId').value = data.VisitID;
                     document.getElementById('editCompanyName').value = data.CompanyName;
+                    document.getElementById('editCompanyName').readOnly = true;
                     document.getElementById('editVisitorId').value = data.VisitorID;
                     document.getElementById('editInterviewee').value = data.Interviewee || '';
-                    document.getElementById('editVisitDate').value = data.VisitDate;
+                    document.getElementById('editVisitDate').value = data.VisitDate.split('T')[0];
                     document.getElementById('editStatus').value = data.Status;
                     
                     showEditVisitModal();
@@ -212,24 +213,67 @@ Set rs = conn.Execute(sql)
     function saveVisit(event) {
         event.preventDefault();
         
-        const formData = new FormData(document.getElementById('editVisitForm'));
+        // 取得表單元素
+        const form = document.getElementById('editVisitForm');
         
+        // 直接使用表單建立 FormData
+        const formData = new FormData(form);
+        
+        // 檢查必要欄位
+        const visitId = formData.get('editVisitId');
+        const companyName = formData.get('editCompanyName');
+        const visitorId = formData.get('editVisitorId');
+        const visitDate = formData.get('editVisitDate');
+        const status = formData.get('editStatus');
+        
+        // 驗證必填欄位
+        if (!visitId && !companyName) {
+            alert('請輸入公司名稱');
+            return false;
+        }
+        if (!visitorId) {
+            alert('請選擇訪廠人員');
+            return false;
+        }
+        if (!visitDate) {
+            alert('請選擇訪廠日期');
+            return false;
+        }
+        if (!status) {
+            alert('請選擇狀態');
+            return false;
+        }
+        
+        // 將 FormData 轉換為 URL 編碼字串
+        const urlEncodedData = new URLSearchParams(formData).toString();
+        
+        // 發送請求
         fetch('save_visit.asp', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: urlEncodedData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('訪廠記錄已更新');
-                location.reload();
-            } else {
-                alert(data.message || '儲存失敗');
+        .then(response => response.text())
+        .then(text => {
+            try {
+                console.log('Server response:', text); // 除錯用
+                const data = JSON.parse(text);
+                if (data.success) {
+                    alert('訪廠記錄已更新');
+                    location.reload();
+                } else {
+                    alert(data.message || '儲存失敗');
+                }
+            } catch (error) {
+                console.error('回應內容:', text);
+                alert('處理回應時發生錯誤：' + error.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('儲存時發生錯誤');
+            alert('儲存時發生錯誤：' + error.message);
         });
         
         return false;
