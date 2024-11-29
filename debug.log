@@ -28,3 +28,6 @@
 2024/11/29 上午 09:30:34 - status = Draft
 2024/11/29 上午 09:30:34 - Found existing CompanyName = 大森工作室
 2024/11/29 上午 09:30:34 - SQL = UPDATE VisitRecords SET VisitorID = 1, Interviewee = N'老闆娘', VisitDate = N'2024-11-29', Status = N'Draft', ModifiedDate = GETDATE() WHERE VisitID = 1
+2024/11/29 上午 09:39:06 - Received Data - visitId: 1, companyName: 大森工作室, visitorId: 1, visitDate: 2024-11-29, status: Draft
+2024/11/29 上午 09:39:06 - Found existing CompanyName = 大森工作室
+2024/11/29 上午 09:39:06 - SQL = UPDATE VisitRecords SET VisitorID = 1, Interviewee = N'老闆娘', VisitDate = '2024-11-29', Status = N'Draft', ModifiedDate = GETDATE() WHERE VisitID = 1

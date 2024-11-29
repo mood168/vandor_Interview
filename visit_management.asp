@@ -154,7 +154,7 @@ Set rs = conn.Execute(sql)
                 </div>
                 <div class="form-group">
                     <label for="editInterviewee">受訪人</label>
-                    <input type="text" id="editInterviewee" name="editInterviewee">
+                    <input type="text" id="editInterviewee" name="editInterviewee" value>
                 </div>
                 <div class="form-group">
                     <label for="editVisitDate">訪廠日期</label>
@@ -180,24 +180,41 @@ Set rs = conn.Execute(sql)
     // 編輯訪廠記錄
     function editVisit(visitId) {
         fetch(`get_visit.asp?id=${visitId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('editVisitId').value = data.VisitID;
-                    document.getElementById('editCompanyName').value = data.CompanyName;
-                    document.getElementById('editCompanyName').readOnly = true;
-                    document.getElementById('editVisitorId').value = data.VisitorID;
-                    document.getElementById('editInterviewee').value = data.Interviewee || '';
-                    document.getElementById('editVisitDate').value = data.VisitDate.split('T')[0];
-                    document.getElementById('editStatus').value = data.Status;
-                    
-                    showEditVisitModal();
-                } else {
-                    alert(data.message);
+            .then(response => response.text())
+            .then(text => {
+                try {
+                    console.log('Server response:', text); // 除錯用
+                    const data = JSON.parse(text);
+                    if (data.success) {
+                        document.getElementById('editVisitId').value = data.VisitID;
+                        document.getElementById('editCompanyName').value = data.CompanyName;
+                        document.getElementById('editCompanyName').readOnly = true;
+                        document.getElementById('editVisitorId').value = data.VisitorID;
+                        document.getElementById('editInterviewee').value = data.Interviewee || '';
+                        document.getElementById('editVisitDate').value = data.VisitDate;
+                        document.getElementById('editStatus').value = data.Status;
+                        
+                        console.log('Loaded data:', { // 除錯用
+                            visitId: data.VisitID,
+                            companyName: data.CompanyName,
+                            visitorId: data.VisitorID,
+                            interviewee: data.Interviewee,
+                            visitDate: data.VisitDate,
+                            status: data.Status
+                        });
+                        
+                        showEditVisitModal();
+                    } else {
+                        alert(data.message);
+                    }
+                } catch (error) {
+                    console.error('JSON parse error:', error);
+                    console.error('Raw response:', text);
+                    alert('載入資料時發生錯誤');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Fetch error:', error);
                 alert('載入訪廠記錄時發生錯誤');
             });
     }
@@ -262,7 +279,7 @@ Set rs = conn.Execute(sql)
                 const data = JSON.parse(text);
                 if (data.success) {
                     alert('訪廠記錄已更新');
-                    location.reload();
+                    window.location.href = 'visit_management.asp';  // 或其他目標頁面
                 } else {
                     alert(data.message || '儲存失敗');
                 }
