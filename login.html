@@ -6,12 +6,13 @@
     <title>登入 | 系統管理</title>
     <link rel="stylesheet" href="styles/login.css" />
     <link rel="stylesheet" href="styles/theme.css" />
+    <script src="scripts/crypto-utils.js"></script>
   </head>
   <body>
     <div class="container">
       <div class="login-box">
         <h1>數網訪廠管理後台</h1>
-        <form method="post" action="login_process.asp">
+        <form method="post" action="login_process.asp" id="loginForm" onsubmit="return hashAndSubmit(event)">
           <div class="input-group">
             <input type="text" id="username" name="username" required />
             <label for="username">使用者名稱</label>
@@ -30,52 +31,20 @@
             登入
           </button>
         </form>
-
-        <div class="forgot-password">
-          <a href="#" onclick="showForgotPasswordModal(); return false;"
-            >忘記密碼？</a
-          >
-        </div>
-      </div>
-    </div>
-
-    <!-- 忘記密碼 Modal -->
-    <div id="forgotPasswordModal" class="modal">
-      <div class="modal-content" style="background-color: #666">
-        <h2>忘記密碼</h2>
-        <form
-          id="forgotPasswordForm"
-          onsubmit="return submitForgotPassword(event)"
-        >
-          <div class="input-group">
-            <input type="text" id="forgotUsername" name="username" required />
-            <label for="forgotUsername">使用者名稱</label>
-          </div>
-          <div class="input-group">
-            <input type="email" id="forgotEmail" name="email" required />
-            <label for="forgotEmail">電子郵件</label>
-          </div>
-          <div class="button-group">
-            <button
-              type="submit"
-              class="submit-button"
-              style="background-color: #fec235"
-            >
-              重設密碼
-            </button>
-            <button
-              type="button"
-              class="cancel-button"
-              onclick="hideForgotPasswordModal()"
-            >
-              取消
-            </button>
-          </div>
-        </form>
       </div>
     </div>
 
     <script>
+      async function hashAndSubmit(event) {
+        event.preventDefault();
+        
+        const passwordInput = document.getElementById('password');
+        const hashedPassword = await hashPassword(passwordInput.value);
+        passwordInput.value = hashedPassword;
+        
+        document.getElementById('loginForm').submit();
+      }
+
       window.onload = function () {
         // 載入儲存的主題設定
         const currentTheme = localStorage.getItem("theme") || "light";
@@ -88,46 +57,6 @@
           alert(decodeURIComponent(error));
         }
       };
-
-      function showForgotPasswordModal() {
-        document.getElementById("forgotPasswordModal").style.display = "flex";
-      }
-
-      function hideForgotPasswordModal() {
-        document.getElementById("forgotPasswordModal").style.display = "none";
-      }
-
-      function submitForgotPassword(event) {
-        event.preventDefault();
-
-        const username = document.getElementById("forgotUsername").value;
-        const email = document.getElementById("forgotEmail").value;
-
-        fetch("forgot_password.asp", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: `username=${encodeURIComponent(
-            username
-          )}&email=${encodeURIComponent(email)}`,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              alert("重設密碼連結已寄送至您的信箱");
-              hideForgotPasswordModal();
-            } else {
-              alert(data.message || "重設密碼失敗");
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            alert("發生錯誤，請稍後再試");
-          });
-
-        return false;
-      }
     </script>
 
     <style>

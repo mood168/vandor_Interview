@@ -135,4 +135,24 @@ CREATE TABLE [dbo].[VisitAnswerHistory](
     FOREIGN KEY (VendorID) REFERENCES Vendors(VendorID),
     FOREIGN KEY (CreatedBy) REFERENCES Users(UserID)
 )
+GO
+
+-- 建立訪廠問題資料表
+CREATE TABLE Questions (
+    QuestionID INT IDENTITY(1,1) PRIMARY KEY,
+    QuestionText NVARCHAR(500) NOT NULL,
+    Category NVARCHAR(50),
+    SortOrder INT,
+    IsActive BIT DEFAULT 1,
+    CreatedDate DATETIME DEFAULT GETDATE(),
+    ModifiedDate DATETIME DEFAULT GETDATE()
+);
+
+-- 插入預設問題
+INSERT INTO Questions (QuestionText, Category, SortOrder) VALUES 
+(N'公司營運狀況', N'基本資料', 1),
+(N'主要產品與服務', N'基本資料', 2),
+(N'品質管理系統認證', N'品質系統', 3),
+(N'生產設備與產能', N'生產管理', 4),
+(N'研發能力與未來規劃', N'研發創新', 5);
 GO 

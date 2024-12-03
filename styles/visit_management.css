@@ -157,3 +157,46 @@
     border: 1px solid var(--border-color);
     color: var(--text-primary);
 }
+
+/* 訪廠記錄表相關樣式 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.date-filter button {
+    padding: 5px 15px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.date-filter button:hover {
+    background: #0056b3;
+}
+
+.date-filter input[type="date"] {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+/* 列印樣式優化 */
+@media print {
+    body {
+        font-size: 12pt;
+    }
+    
+    .visit-record {
+        page-break-inside: avoid;
+        border: none;
+    }
+    
+    .visit-header {
+        background: none;
+        border-bottom: 1px solid #000;
+    }
+}

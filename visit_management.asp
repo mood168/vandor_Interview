@@ -11,18 +11,22 @@ End If
 
 ' 取得訪廠記錄列表
 Dim sql
-sql = "SELECT " & _
-      "vr.VisitID, " & _
-      "vr.CompanyName, " & _
-      "vr.Interviewee, " & _
-      "vr.VisitDate, " & _
-      "vr.Status, " & _
-      "u.FullName as VisitorName, " & _
-      "(SELECT TOP 1 ModifiedDate FROM VisitAnswers va " & _
-      "WHERE va.VisitID = vr.VisitID ORDER BY ModifiedDate DESC) as LastAnswerDate " & _
-      "FROM VisitRecords vr " & _
-      "LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
-      "ORDER BY vr.VisitDate DESC"
+sql = "WITH RankedVisits AS ( " & _
+      "    SELECT " & _
+      "        vr.VisitID, " & _
+      "        vr.CompanyName, " & _
+      "        ISNULL(vr.Interviewee, '') as Interviewee, " & _
+      "        vr.VisitDate, " & _
+      "        vr.Status, " & _
+      "        ISNULL(u.FullName, '') as VisitorName, " & _
+      "        ISNULL((SELECT TOP 1 ModifiedDate FROM VisitAnswers va " & _
+      "         WHERE va.VisitID = vr.VisitID ORDER BY ModifiedDate DESC), vr.CreatedDate) as LastAnswerDate, " & _
+      "        ROW_NUMBER() OVER (PARTITION BY vr.CompanyName ORDER BY vr.VisitDate DESC) as RowNum " & _
+      "    FROM VisitRecords vr " & _
+      "    LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
+      ") " & _
+      "SELECT * FROM RankedVisits WHERE RowNum = 1 " & _
+      "ORDER BY VisitDate DESC"
 
 Dim rs
 Set rs = conn.Execute(sql)
@@ -92,6 +96,8 @@ Set rs = conn.Execute(sql)
                                            class="edit-btn" onclick="editVisit(<%=rs("VisitID")%>)">編輯</a>
                                         <a href="print_visit.asp?id=<%=rs("VisitID")%>" 
                                            class="edit-btn" target="_blank">訪廠紀錄表</a>
+                                        <a href="full_visit_records_by_date_range.asp?id=<%=rs("CompanyName")%>" 
+                                           class="edit-btn" target="_blank">完整紀錄表</a>
                                     </td>
                                 </tr>
                             <% 
