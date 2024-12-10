@@ -1,3 +1,4 @@
+-- 建立啟用廠商的預存程序
 CREATE PROCEDURE sp_ActivateVendor
     @VendorID int,
     @ModifiedBy int
@@ -27,3 +28,4 @@ BEGIN
         RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState)
     END CATCH
 END
+

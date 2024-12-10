@@ -3,12 +3,14 @@
 <%
 Response.Clear
 Response.CharSet = "utf-8"
-Response.ContentType = "application/json"
+Response.ContentType = "text/html"
+'Response.ContentType = "application/json"
 
 ' 錯誤處理函數
 Function HandleError(message)
     Response.Clear
-    Response.Write "{""success"": false, ""message"": """ & Replace(message, """", "\""") & """}"
+    if Instr(message,"重複的索引鍵值") > 0  or Instr(message, "The duplicate key value") > 0 then message = "母子代碼 或 統編已存在!"
+    Response.Write "<script>alert('" & Replace(message, "'", "\'") & "');history.go(-1);</script>"
     Response.End
 End Function
 
@@ -39,6 +41,7 @@ If childCode = "" Then HandleError("子代號不能為空")
 If uniformNumber = "" Then HandleError("統一編號不能為空")
 If vendorName = "" Then HandleError("廠商名稱不能為空")
 If contactPerson = "" Then HandleError("聯絡人不能為空")
+
 
 ' SQL 注入防護
 Function SafeSQL(str)
