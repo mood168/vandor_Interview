@@ -91,12 +91,12 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                     <div class="form-group">
                         <label for="parentCode">母代號</label>
                         <input type="text" id="parentCode" name="parentCode" maxlength="3" required 
-                               pattern="[0-9]{3}" title="請輸入3碼數字">
+                               輸入3碼數字
                     </div>
                     <div class="form-group">
                         <label for="childCode">子代號</label>
                         <input type="text" id="childCode" name="childCode" maxlength="3" required
-                               pattern="[0-9]{3}" title="請輸入3碼數字">
+                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字">
                     </div>
                 </div>
                 <div class="form-group">
@@ -110,7 +110,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                 </div>
                 <div class="form-group">
                     <label for="contactPerson">客服聯絡人</label>
-                    <input type="text" id="contactPerson" name="contactPerson" maxlength="100" required>
+                    <input type="text" id="contactPerson" name="contactPerson" maxlength="100">
                 </div>
                 <div class="form-group">
                     <label for="logisticsContact">物流聯絡人</label>
@@ -154,12 +154,12 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                     <div class="form-group">
                         <label for="editParentCode">母代號</label>
                         <input type="text" id="editParentCode" name="parentCode" maxlength="3" required 
-                               pattern="[0-9]{3}" title="請輸入3碼數字">
+                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字">
                     </div>
                     <div class="form-group">
                         <label for="editChildCode">子代號</label>
                         <input type="text" id="editChildCode" name="childCode" maxlength="3" required
-                               pattern="[0-9]{3}" title="請輸入3碼數字">
+                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字">
                     </div>
                 </div>
                 <div class="form-group">
@@ -173,7 +173,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                 </div>
                 <div class="form-group">
                     <label for="editContactPerson">客服聯絡人</label>
-                    <input type="text" id="editContactPerson" name="contactPerson" maxlength="100" required>
+                    <input type="text" id="editContactPerson" name="contactPerson" maxlength="100">
                 </div>
                 <div class="form-group">
                     <label for="editLogisticsContact">物流聯絡人</label>
@@ -237,7 +237,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                 const uniformNumber = row.cells[1].textContent.toLowerCase(); // 統一編號
                 const vendorName = row.cells[2].textContent.toLowerCase(); // 廠商名稱
                 
-                // 檢查是否���合任一搜尋條件
+                // 檢查是否符合任一搜尋條件
                 const matchCode = code.includes(searchText.replace('-', '')); // 移除連字符進行比對
                 const matchUniformNumber = uniformNumber.includes(searchText);
                 const matchVendorName = vendorName.includes(searchText);

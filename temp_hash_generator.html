@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Generate Password Hash</title>
+    <script src="scripts/crypto-utils.js"></script>
+</head>
+<body>
+    <script>
+        async function generateHash() {
+            const tempPassword = "P@ssw0rd123";
+            const hash = await hashPassword(tempPassword);
+            document.body.innerHTML = `
+                臨時密碼: ${tempPassword}<br>
+                SHA-256 雜湊值: ${hash}
+            `;
+        }
+        generateHash();
+    </script>
+</body>
+</html>

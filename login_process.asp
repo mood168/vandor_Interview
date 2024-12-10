@@ -11,12 +11,12 @@ If Request.ServerVariables("REQUEST_METHOD") <> "POST" Then
 End If
 
 ' 取得表單資料
-Dim username, hashedPassword
+Dim username, password
 username = Trim(Request.Form("username"))
-hashedPassword = Trim(Request.Form("password"))  ' 這裡已經是經過雜湊的密碼
+password = Trim(Request.Form("password"))
 
 ' 基本驗證
-If username = "" Or hashedPassword = "" Then
+If username = "" Or password = "" Then
     Response.Redirect "login.html?error=" & Server.URLEncode("請輸入帳號和密碼")
     Response.End
 End If
@@ -39,7 +39,7 @@ cmd.CommandText = "sp_UserLogin"
 
 ' 設定參數
 cmd.Parameters.Append cmd.CreateParameter("@Username", 200, 1, 500, username)
-cmd.Parameters.Append cmd.CreateParameter("@Password", 200, 1, 500, hashedPassword)
+cmd.Parameters.Append cmd.CreateParameter("@Password", 200, 1, 500, password)
 cmd.Parameters.Append cmd.CreateParameter("@LoginIP", 200, 1, 50, userIP)
 
 ' 執行預存程序

@@ -6,13 +6,12 @@
     <title>登入 | 系統管理</title>
     <link rel="stylesheet" href="styles/login.css" />
     <link rel="stylesheet" href="styles/theme.css" />
-    <script src="scripts/crypto-utils.js"></script>
   </head>
   <body>
     <div class="container">
       <div class="login-box">
         <h1>數網訪廠管理後台</h1>
-        <form method="post" action="login_process.asp" id="loginForm" onsubmit="return hashAndSubmit(event)">
+        <form method="post" action="login_process.asp">
           <div class="input-group">
             <input type="text" id="username" name="username" required />
             <label for="username">使用者名稱</label>
@@ -23,28 +22,12 @@
             <label for="password">密碼</label>
           </div>
 
-          <button
-            class="submit-button"
-            style="background-color: #666"
-            type="submit"
-          >
-            登入
-          </button>
+          <button class="submit-button" type="submit">登入</button>
         </form>
       </div>
     </div>
 
     <script>
-      async function hashAndSubmit(event) {
-        event.preventDefault();
-        
-        const passwordInput = document.getElementById('password');
-        const hashedPassword = await hashPassword(passwordInput.value);
-        passwordInput.value = hashedPassword;
-        
-        document.getElementById('loginForm').submit();
-      }
-
       window.onload = function () {
         // 載入儲存的主題設定
         const currentTheme = localStorage.getItem("theme") || "light";
@@ -58,117 +41,5 @@
         }
       };
     </script>
-
-    <style>
-      .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-      }
-
-      .modal-content {
-        background-color: var(--bg-color);
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 400px;
-        color: var(--text-color);
-      }
-
-      .modal-content h2 {
-        color: var(--heading-color);
-        margin-bottom: 1.5rem;
-        text-align: center;
-      }
-
-      .modal-content .input-group {
-        margin-bottom: 1.5rem;
-      }
-
-      .modal-content .input-group input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        background-color: var(--input-bg);
-        color: var(--text-color);
-      }
-
-      .modal-content .input-group input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-      }
-
-      .modal-content .input-group label {
-        color: var(--label-color);
-      }
-
-      .button-group {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 1.5rem;
-        gap: 1rem;
-      }
-
-      .submit-button {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        flex: 1;
-      }
-
-      .submit-button:hover {
-        background-color: var(--primary-hover-color);
-      }
-
-      .cancel-button {
-        background-color: var(--cancel-btn-bg, #f0f0f0);
-        color: var(--cancel-btn-text, #666);
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        flex: 1;
-      }
-
-      .cancel-button:hover {
-        background-color: var(--cancel-btn-hover-bg, #e0e0e0);
-      }
-
-      /* 確保輸入框在深色主題下也有適當的顏色 */
-      @media (prefers-color-scheme: dark) {
-        .modal-content {
-          background-color: var(--bg-color);
-        }
-
-        .modal-content .input-group input {
-          background-color: var(--input-bg);
-          color: var(--text-color);
-          border-color: var(--border-color);
-        }
-
-        .cancel-button {
-          background-color: var(--cancel-btn-bg, #333);
-          color: var(--cancel-btn-text, #fff);
-        }
-
-        .cancel-button:hover {
-          background-color: var(--cancel-btn-hover-bg, #444);
-        }
-      }
-    </style>
   </body>
 </html>
