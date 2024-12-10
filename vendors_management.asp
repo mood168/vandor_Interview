@@ -11,7 +11,7 @@ End If
 
 ' 取得廠商列表
 Dim rsVendors
-Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY CreatedDate DESC")
+Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, CreatedDate DESC")
 %>
 
 <!DOCTYPE html>
@@ -58,7 +58,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                         </thead>
                         <tbody>
                             <% Do While Not rsVendors.EOF %>
-                                <tr>
+                                <tr class="<% If Not rsVendors("IsActive") Then Response.Write "inactive" %>">
                                     <td><%=rsVendors("ParentCode")%>-<%=rsVendors("ChildCode")%></td>
                                     <td><%=rsVendors("UniformNumber")%></td>
                                     <td><%=rsVendors("VendorName")%></td>
@@ -66,8 +66,21 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                                     <td><%=rsVendors("Phone")%></td>
                                     <td><%=rsVendors("Address")%></td>
                                     <td class="actions">
-                                        <button class="edit-btn" onclick="editVendor(<%=rsVendors("VendorID")%>)">編輯</button>
-                                        <button class="delete-btn" onclick="deleteVendor(<%=rsVendors("VendorID")%>)">刪除</button>
+                                        
+                                        
+                                            <%
+                                            If(rsVendors("IsActive") = True) then
+                                            %>
+                                            <button class="edit-btn" onclick="editVendor(<%=rsVendors("VendorID")%>)">編輯</button>
+                                            <button class="delete-btn" onclick="deleteVendor(<%=rsVendors("VendorID")%>)">停用</button>
+                                            <%
+                                            Else
+                                            %>
+                                            <button class="activate-btn" onclick="activateVendor(<%=rsVendors("VendorID")%>)">啟用</button>
+                                            <%
+                                            End If
+                                            %>
+                                        
                                     </td>
                                 </tr>
                             <% 
@@ -91,12 +104,12 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                     <div class="form-group">
                         <label for="parentCode">母代號</label>
                         <input type="text" id="parentCode" name="parentCode" maxlength="3" required 
-                               輸入3碼數字
+                               pattern="[0-9]{3}" title="請輸入3碼數字">
                     </div>
                     <div class="form-group">
                         <label for="childCode">子代號</label>
                         <input type="text" id="childCode" name="childCode" maxlength="3" required
-                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字">
+                               pattern="[0-9]{3}" title="請輸入3碼數字">
                     </div>
                 </div>
                 <div class="form-group">
@@ -110,7 +123,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                 </div>
                 <div class="form-group">
                     <label for="contactPerson">客服聯絡人</label>
-                    <input type="text" id="contactPerson" name="contactPerson" maxlength="100">
+                    <input type="text" id="contactPerson" name="contactPerson" maxlength="100" required>
                 </div>
                 <div class="form-group">
                     <label for="logisticsContact">物流聯絡人</label>
@@ -154,12 +167,12 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                     <div class="form-group">
                         <label for="editParentCode">母代號</label>
                         <input type="text" id="editParentCode" name="parentCode" maxlength="3" required 
-                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字">
+                               pattern="[0-9]{3}" title="請輸入3碼數字">
                     </div>
                     <div class="form-group">
                         <label for="editChildCode">子代號</label>
                         <input type="text" id="editChildCode" name="childCode" maxlength="3" required
-                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字">
+                               pattern="[0-9]{3}" title="請輸入3碼數字">
                     </div>
                 </div>
                 <div class="form-group">
@@ -173,7 +186,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
                 </div>
                 <div class="form-group">
                     <label for="editContactPerson">客服聯絡人</label>
-                    <input type="text" id="editContactPerson" name="contactPerson" maxlength="100">
+                    <input type="text" id="editContactPerson" name="contactPerson" maxlength="100" required>
                 </div>
                 <div class="form-group">
                     <label for="editLogisticsContact">物流聯絡人</label>
@@ -251,6 +264,27 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors WHERE IsActive = 1 ORDER BY 
         function deleteVendor(vendorId) {
             if (confirm('確定要刪除此廠商嗎？')) {
                 fetch('delete_vendor.asp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `vendorId=${vendorId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            }
+        }
+
+        // 啟用廠商
+        function activateVendor(vendorId) {
+            if (confirm('確定要啟用此廠商嗎？')) {
+                fetch('activate_vendor.asp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',

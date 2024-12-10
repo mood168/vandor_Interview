@@ -34,7 +34,8 @@
 }
 
 .edit-btn,
-.delete-btn {
+.delete-btn,
+.activate-btn {
     padding: 6px 12px;
     border-radius: 6px;
     border: none;
@@ -50,6 +51,11 @@
 
 .delete-btn {
     background-color: #ff3b30;
+    color: #fff;
+}
+
+.activate-btn {
+    background-color: #597e43;
     color: #fff;
 }
 
@@ -157,4 +163,15 @@
         margin: 20px;
         padding: 20px;
     }
+}
+
+/* 停用狀態的廠商列樣式 */
+.vendors-table tbody tr.inactive {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.vendors-table tbody tr.inactive td {
+    color: inherit;
 } 
