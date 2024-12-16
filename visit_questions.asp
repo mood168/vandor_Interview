@@ -169,6 +169,41 @@ End If
         .amount-input {
             width: 100px !important;
         }
+
+        /* 在 visit_questions.asp 的 <style> 區塊中加入 */
+        .floating-save-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .floating-save-btn:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .floating-save-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 隱藏原有的儲存按鈕 */
+        .save-btn {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -227,7 +262,8 @@ End If
                                     Set rsQuestions = conn.Execute("SELECT * FROM VisitQuestions WHERE CategoryID = " & categoryID & " ORDER BY SortOrder")
                                     
                                     Do While Not rsQuestions.EOF 
-                                        Dim questionId, answerType, hasOptions, options, hasPercentage
+                                        Dim questionText, questionId, answerType, hasOptions, options, hasPercentage
+                                        questionText = rsQuestions("QuestionText")
                                         questionId = rsQuestions("QuestionID")
                                         answerType = rsQuestions("AnswerType")
                                         hasOptions = rsQuestions("HasOptions")
@@ -236,7 +272,7 @@ End If
                                     %>
                                         <div class="question-item">
                                             <label style="font-size: 18px;">
-                                                <%=rsQuestions("QuestionText")%>
+                                                <%=questionText%>
                                                 <% If rsQuestions("IsRequired") Then %>
                                                     <span class="required">*</span>
                                                 <% End If %>
@@ -255,9 +291,24 @@ End If
                                                         <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
                                             <% 
                                                 Case "date" 
+                                                    ' 檢查是否為成立時間相關問題
+                                                    If InStr(rsQuestions("QuestionText"), "成立時間") > 0 Then 
                                             %>
-                                                    <input type="date" name="q_<%=questionId%>" 
-                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                        <input type="number" 
+                                                               name="q_<%=questionId%>" 
+                                                               min="1900" 
+                                                               max="<%=Year(Date())%>" 
+                                                               placeholder="請輸入西元年"
+                                                               <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                            <% 
+                                                    Else 
+                                            %>
+                                                        <input type="date" 
+                                                               name="q_<%=questionId%>" 
+                                                               <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                            <%
+                                                    End If
+                                            %>
                                             <% 
                                                 Case "radio" 
                                                     If hasOptions Then
@@ -271,8 +322,34 @@ End If
                                                         %>
                                                             <label class="radio-label" style="display: inline-block;">
                                                                 <input type="radio" name="q_<%=questionId%>" value="<%=opt%>" <%=IIf(rsQuestions("IsRequired"), "required", "")%>><span><%=opt%></span>
-                                                                <% If hasPercentage And InStr(opt, "佔") > 0 Then %>
+                                                                <% 
+                                                                If hasPercentage And InStr(opt, "佔") > 0 Then 
+                                                                %>
                                                                     <input type="number" class="percentage-input" name="q_<%=questionId%>_percent_<%=opt%>" min="0" max="100" placeholder="%">
+                                                                <% 
+                                                                End If
+                                                                
+                                                                ' 檢查是否為委外選項
+                                                                If InStr(opt, "委外") > 0 Then 
+                                                                    If InStr(questionText, "網站系統商") > 0 Then
+                                                                        Dim placeString
+                                                                        placeString = "請輸入網站系統商"
+                                                                    Else
+                                                                        placeString = "請輸入倉儲物流廠商"  
+                                                                    End If
+                                                                %>
+                                                                    <div class="vendor-info-container">
+                                                                        <input type="text" 
+                                                                               class="vendor-input" 
+                                                                               name="q_<%=questionId%>_vendor_<%=opt%>" 
+                                                                               placeholder="<%=placeString%>">
+                                                                    </div>
+                                                                    <div class="vendor-info-container">
+                                                                        <input type="text" 
+                                                                               class="vendor-address-input" 
+                                                                               name="q_<%=questionId%>_address_<%=opt%>" 
+                                                                               placeholder="請輸入地址" size="50">
+                                                                    </div>
                                                                 <% End If %>
                                                             </label>
                                                         <% Next %>
@@ -321,12 +398,6 @@ End If
                                             <%
                                             End Select 
                                             %>
-
-                                            <% If rsQuestions("CanModify") Then %>
-                                                <button class="save-btn" type="button" onclick="saveAnswer(<%=questionId%>)">
-                                                    儲存
-                                                </button>
-                                            <% End If %>
                                         </div>
                                     <% 
                                         rsQuestions.MoveNext
@@ -457,7 +528,7 @@ End If
             const companyName = this.value;
             if (!companyName) return;
 
-            // 清除所有現有的最近答案顯示
+            // 清除現有的最近答案顯示
             document.querySelectorAll('.last-answer').forEach(el => el.remove());
 
             // 獲取所有問題的最近答案
@@ -575,6 +646,16 @@ End If
                         if (percentInput && percentInput.value) {
                             answer += `${percentInput.value}%`;
                         }
+                        // 檢查是否有廠商和地址輸入
+                        const vendorInput = questionContainer.querySelector(`[name="q_${questionId}_vendor_${selectedRadio.value}"]`);
+                        const addressInput = questionContainer.querySelector(`[name="q_${questionId}_address_${selectedRadio.value}"]`);
+                        if (vendorInput && vendorInput.value) {
+                            answer += `(${vendorInput.value}`;
+                            if (addressInput && addressInput.value) {
+                                answer += ` - ${addressInput.value}`;
+                            }
+                            answer += `)`;
+                        }
                     }
                 } else if (answerType === 'checkbox') {
                     const checkedBoxes = questionContainer.querySelectorAll(`input[name="q_${questionId}"]:checked`);
@@ -637,6 +718,142 @@ End If
                 alert('處理答案時發生錯誤');
             }
         }
+
+        // 在 script 區塊中加入
+        function saveAllAnswers() {
+            const form = document.getElementById('visitForm');
+            const companyName = form.companyName.value;
+            const visitDate = form.visitDate.value;
+            
+            if (!companyName) {
+                alert('請選擇公司名稱');
+                return;
+            }
+
+            // 收集所有問題的答案
+            const questions = document.querySelectorAll('.question-item');
+            let hasError = false;
+            let savedCount = 0;
+            let totalQuestions = 0;
+
+            // 建立一個 Promise 陣列來處理所有儲存請求
+            const savePromises = Array.from(questions).map(questionItem => {
+                const questionId = questionItem.querySelector('[name^="q_"]').name.split('_')[1];
+                return new Promise((resolve, reject) => {
+                    try {
+                        // 收集答案數據
+                        const formData = new URLSearchParams();
+                        formData.append('questionId', questionId);
+                        formData.append('companyName', companyName);
+                        formData.append('visitDate', visitDate);
+
+                        // 根據問題類型收集答案
+                        let answer = '';
+                        const inputElement = questionItem.querySelector(`[name="q_${questionId}"]`);
+                        const answerType = inputElement.type;
+
+                        if (answerType === 'radio') {
+                            const selectedRadio = questionItem.querySelector(`input[name="q_${questionId}"]:checked`);
+                            if (selectedRadio) {
+                                answer = selectedRadio.value;
+                                const percentInput = questionItem.querySelector(`[name="q_${questionId}_percent_${selectedRadio.value}"]`);
+                                if (percentInput && percentInput.value) {
+                                    answer += `${percentInput.value}%`;
+                                }
+                                // 檢查是否有系統商輸入
+                                const vendorInput = questionItem.querySelector(`[name="q_${questionId}_vendor_${selectedRadio.value}"]`);
+                                const addressInput = questionItem.querySelector(`[name="q_${questionId}_address_${selectedRadio.value}"]`);
+                                if (vendorInput && vendorInput.value) {
+                                    answer += `(${vendorInput.value}`;
+                                    if (addressInput && addressInput.value) {
+                                        answer += ` - ${addressInput.value}`;
+                                    }
+                                    answer += `)`;
+                                }
+                            }
+                        } else if (answerType === 'checkbox') {
+                            const checkedBoxes = questionItem.querySelectorAll(`input[name="q_${questionId}"]:checked`);
+                            const answers = [];
+                            checkedBoxes.forEach(box => {
+                                let value = box.value;
+                                const percentInput = questionItem.querySelector(`[name="q_${questionId}_percent_${box.value}"]`);
+                                const amountInput = questionItem.querySelector(`[name="q_${questionId}_amount_${box.value}"]`);
+                                if (percentInput && percentInput.value) {
+                                    value += `${percentInput.value}%`;
+                                }
+                                if (amountInput && amountInput.value) {
+                                    value += `${amountInput.value}元`;
+                                }
+                                answers.push(value);
+                            });
+                            answer = answers.join(',');
+                        } else {
+                            answer = inputElement.value;
+                        }
+
+                        if (answer) {
+                            formData.append('answer', answer);
+                            totalQuestions++;
+
+                            // 發送儲存請求
+                            fetch('save_answer.asp', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: formData.toString()
+                            })
+                            .then(response => response.text())
+                            .then(text => {
+                                try {
+                                    const data = JSON.parse(text);
+                                    if (data.success) {
+                                        savedCount++;
+                                        resolve();
+                                    } else {
+                                        reject(new Error(data.message || '儲存失敗'));
+                                    }
+                                } catch (error) {
+                                    reject(new Error('處理回應時發生錯誤'));
+                                }
+                            })
+                            .catch(error => reject(error));
+                        } else {
+                            resolve(); // 如果沒有答案，直接解析
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            });
+
+            // 等待所有儲存請求完成
+            Promise.all(savePromises)
+                .then(() => {
+                    if (totalQuestions > 0) {
+                        alert(`儲存完成！成功儲存 ${savedCount} 個答案。`);
+                        // 重新載入最近答案
+                        const companySelect = document.getElementById('companyName');
+                        companySelect.dispatchEvent(new Event('change'));
+                    } else {
+                        alert('沒有需要儲存的答案。');
+                    }
+                })
+                .catch(error => {
+                    console.error('儲存過程中發生錯誤:', error);
+                    alert('儲存過程中發生錯誤，請檢查網路連線並重試。');
+                });
+        }
     </script>
+
+    <!-- 在 </body> 標籤前加入 -->
+    <button type="button" class="floating-save-btn" onclick="saveAllAnswers()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        儲存所有答案
+    </button>
 </body>
 </html> 
