@@ -14,12 +14,12 @@ searchKeyword = Trim(Request.QueryString("searchKeyword"))
 ' 只在有搜尋關鍵字時執行搜尋
 If Len(searchKeyword) > 0 Then
     ' 建立模糊搜尋 SQL
-    sql = "SELECT ParentCode, ChildCode, VendorName, UniformNumber FROM Vendors " & _
+    sql = "SELECT ParentCode, ChildCode, VendorName, UniformNumber, IsActive FROM Vendors " & _
           "WHERE ParentCode LIKE '%" & searchKeyword & "%' " & _
           "OR ChildCode LIKE '%" & searchKeyword & "%' " & _
           "OR VendorName LIKE N'%" & searchKeyword & "%' " & _
           "OR UniformNumber LIKE '%" & searchKeyword & "%' " & _
-          "ORDER BY ParentCode, ChildCode"
+          "ORDER BY IsActive DESC, ParentCode, ChildCode"
     
     Set rs = conn.Execute(sql)
     
@@ -35,8 +35,9 @@ If Len(searchKeyword) > 0 Then
                 </tr>
             </thead>
             <tbody>
-                <% Do While Not rs.EOF %>
-                    <tr style="cursor: pointer;">
+                <% 
+                Do While Not rs.EOF %>
+                    <tr style="cursor: pointer; <% If(Not rs("IsActive")) Then Response.Write "color: #999; text-decoration: line-through;" End If %>">
                         <td><%= rs("ParentCode") %></td>
                         <td><%= rs("ChildCode") %></td>
                         <td><%= rs("VendorName") %></td>

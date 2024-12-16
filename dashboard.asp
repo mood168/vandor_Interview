@@ -201,9 +201,26 @@ End If
 
             // 綁定表格行點擊事件
             function bindTableRowClick() {
-                $('.search-results tbody tr').css('cursor', 'pointer').on('click', function() {
-                    const vendorName = $(this).find('td:eq(2)').text(); // 第三欄是廠商名稱
-                    window.location.href = 'visit_questions.asp?vendor=' + encodeURIComponent(vendorName);
+                $('.search-results tbody tr').each(function() {
+                    // 檢查是否為停用狀態 (isActive = 0)
+                    const isInactive = $(this).attr('style') && $(this).attr('style').includes('text-decoration: line-through');
+                    
+                    if(isInactive) {
+                        // 如果是停用狀態，移除所有點擊事件並設置樣式
+                        $(this)
+                            .css('cursor', 'not-allowed')
+                            .off('click')  // 移除所有點擊事件
+                            .addClass('inactive-row');  // 可選：添加一個類別以便進一步樣式設定
+                    } else {
+                        // 如果是啟用狀態，添加點擊事件和指針樣式
+                        $(this)
+                            .css('cursor', 'pointer')
+                            .off('click')  // 先移除可能存在的點擊事件
+                            .on('click', function() {
+                                const vendorName = $(this).find('td:eq(2)').text();
+                                window.location.href = 'visit_questions.asp?vendor=' + encodeURIComponent(vendorName);
+                            });
+                    }
                 });
             }
 
