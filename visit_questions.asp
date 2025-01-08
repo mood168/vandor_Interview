@@ -283,12 +283,12 @@ End If
                                                 Case "text" 
                                             %>
                                                     <input type="text" name="q_<%=questionId%>" 
-                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                        <%If rsQuestions("IsRequired") then Response.Write "required"%>>
                                             <% 
                                                 Case "number" 
                                             %>
                                                     <input type="number" name="q_<%=questionId%>" 
-                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                        <%If rsQuestions("IsRequired") then Response.Write "required"%>>
                                             <% 
                                                 Case "date" 
                                                     ' 檢查是否為成立時間相關問題
@@ -299,13 +299,13 @@ End If
                                                                min="1900" 
                                                                max="<%=Year(Date())%>" 
                                                                placeholder="請輸入西元年"
-                                                               <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                               <%If rsQuestions("IsRequired") then Response.Write "required"%>>
                                             <% 
                                                     Else 
                                             %>
                                                         <input type="date" 
                                                                name="q_<%=questionId%>" 
-                                                               <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                               <%If rsQuestions("IsRequired") then Response.Write "required"%>>
                                             <%
                                                     End If
                                             %>
@@ -321,7 +321,7 @@ End If
                                                                 opt = Replace(Replace(opt, """", ""), " ", "")
                                                         %>
                                                             <label class="radio-label" style="display: inline-block;">
-                                                                <input type="radio" name="q_<%=questionId%>" value="<%=opt%>" <%=IIf(rsQuestions("IsRequired"), "required", "")%>><span><%=opt%></span>
+                                                                <input type="radio" name="q_<%=questionId%>" value="<%=opt%>" <%If rsQuestions("IsRequired") then Response.Write "required"%>><span><%=opt%></span>
                                                                 <% 
                                                                 If hasPercentage And InStr(opt, "佔") > 0 Then 
                                                                 %>
@@ -394,7 +394,7 @@ End If
                                                 Case Else
                                             %>
                                                     <input type="text" name="q_<%=questionId%>" 
-                                                        <%=IIf(rsQuestions("IsRequired"), "required", "")%>>
+                                                        <%If rsQuestions("IsRequired") then Response.Write "required"%>>
                                             <%
                                             End Select 
                                             %>

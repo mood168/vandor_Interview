@@ -9,9 +9,9 @@ If Session("UserID") = "" Then
     Response.End
 End If
 
-' 取得公司名稱
-Dim companyName
-companyName = Request.QueryString("id")
+' 取得訪廠記錄ID
+Dim visitorID
+visitorID = Request.QueryString("id")
 
 ' 取得該公司所有訪廠記錄
 Dim sql
@@ -20,11 +20,12 @@ sql = "SELECT vr.*, u.FullName as VisitorName, " & _
       "FROM VisitRecords vr " & _
       "LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
       "LEFT JOIN Vendors v ON vr.CompanyName = v.VendorName " & _
-      "WHERE vr.CompanyName = '" & Replace(companyName, "'", "''") & "' " & _
+      "WHERE vr.VisitID = " & visitorID  & _
       "ORDER BY vr.VisitDate DESC"
 
 Dim rs
 Set rs = conn.Execute(sql)
+
 
 If rs.EOF Then
     Response.Write "找不到訪廠記錄"

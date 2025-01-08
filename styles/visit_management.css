@@ -137,6 +137,7 @@
     margin-top: 20px;
 } 
 
+.search-btn,
 .save-btn,
 .cancel-btn {
     padding: 12px 24px;
@@ -146,6 +147,7 @@
     transition: opacity 0.3s;
 }
 
+.search-btn,
 .save-btn {
     background-color: transparent;
     border: 1px solid var(--border-color);

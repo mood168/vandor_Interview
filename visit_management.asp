@@ -9,11 +9,20 @@ If Session("UserID") = "" Then
     Response.End
 End If
 
+' 日期格式化函數
+Function FormatDateYMD(dateValue)
+    If IsNull(dateValue) Or dateValue = "" Then
+        FormatDateYMD = "-"
+    Else
+        FormatDateYMD = Year(dateValue) & "/" & Right("0" & Month(dateValue), 2) & "/" & Right("0" & Day(dateValue), 2)
+    End If
+End Function
+
 ' 取得訪廠記錄列表
 Dim sql
 sql = "WITH RankedVisits AS ( " & _
       "    SELECT " & _
-      "        vr.VisitID, " & _
+      "        vr.VisitorID, vr.VisitID, " & _
       "        vr.CompanyName, " & _
       "        ISNULL(vr.Interviewee, '') as Interviewee, " & _
       "        vr.VisitDate, " & _
@@ -78,25 +87,19 @@ Set rs = conn.Execute(sql)
                                     <td><%=rs("CompanyName")%></td>
                                     <td><%=rs("VisitorName")%></td>
                                     <td><%=rs("Interviewee")%></td>
-                                    <td><%=FormatDateTime(rs("VisitDate"),2)%></td>
-                                    <td><%
-                                    If IsNull(rs("LastAnswerDate")) Then
-                                        Response.Write("-")
-                                    Else
-                                        Response.Write(FormatDateTime(rs("LastAnswerDate"),2))
-                                    End If
-                                    %></td>
+                                    <td><%=FormatDateYMD(rs("VisitDate"))%></td>
+                                    <td><%=FormatDateYMD(rs("LastAnswerDate"))%></td>
                                     <td>
                                         <span class="status-badge <%=LCase(rs("Status"))%>">
                                             <%=rs("Status")%>
                                         </span>
                                     </td>
                                     <td class="actions">
-                                        <a href="#" 
-                                           class="edit-btn" onclick="editVisit(<%=rs("VisitID")%>)">編輯</a>
+                                        <a href="visit_questions.asp?vendor=<%=rs("CompanyName")%>" 
+                                           class="edit-btn">編輯</a>
                                         <a href="print_visit.asp?id=<%=rs("VisitID")%>" 
                                            class="edit-btn" target="_blank">訪廠紀錄表</a>
-                                        <a href="full_visit_records_by_date_range.asp?id=<%=rs("CompanyName")%>" 
+                                        <a href="full_visit_records_by_date_range.asp?id=<%=rs("visitorID")%>" 
                                            class="edit-btn" target="_blank">完整紀錄表</a>
                                     </td>
                                 </tr>

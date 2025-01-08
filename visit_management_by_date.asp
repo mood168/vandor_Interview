@@ -9,20 +9,33 @@ If Session("UserID") = "" Then
     Response.End
 End If
 
+' 日期格式化函數
+Function FormatDateYMD(dateValue)
+    If IsNull(dateValue) Or dateValue = "" Then
+        FormatDateYMD = "-"
+    Else
+        FormatDateYMD = Year(dateValue) & "/" & Right("0" & Month(dateValue), 2) & "/" & Right("0" & Day(dateValue), 2)
+    End If
+End Function
+
 ' 取得訪廠記錄列表
 Dim sql
-sql = "SELECT " & _
-      "vr.VisitID, " & _
-      "vr.CompanyName, " & _
-      "vr.Interviewee, " & _
-      "vr.VisitDate, " & _
-      "vr.Status, " & _
-      "u.FullName as VisitorName, " & _
-      "(SELECT TOP 1 ModifiedDate FROM VisitAnswers va " & _
-      "WHERE va.VisitID = vr.VisitID ORDER BY ModifiedDate DESC) as LastAnswerDate " & _
-      "FROM VisitRecords vr " & _
-      "LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
-      "ORDER BY vr.VisitDate DESC"
+sql = "WITH RankedVisits AS ( " & _
+      "    SELECT " & _
+      "        vr.VisitorID, vr.VisitID, " & _
+      "        vr.CompanyName, " & _
+      "        ISNULL(vr.Interviewee, '') as Interviewee, " & _
+      "        vr.VisitDate, " & _
+      "        vr.Status, " & _
+      "        ISNULL(u.FullName, '') as VisitorName, " & _
+      "        ISNULL((SELECT TOP 1 ModifiedDate FROM VisitAnswers va " & _
+      "         WHERE va.VisitID = vr.VisitID ORDER BY ModifiedDate DESC), vr.CreatedDate) as LastAnswerDate, " & _
+      "        ROW_NUMBER() OVER (PARTITION BY vr.CompanyName ORDER BY vr.VisitDate DESC) as RowNum " & _
+      "    FROM VisitRecords vr " & _
+      "    LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
+      ") " & _
+      "SELECT * FROM RankedVisits WHERE RowNum = 1 " & _
+      "ORDER BY VisitDate DESC"
 
 Dim rs
 Set rs = conn.Execute(sql)
@@ -33,7 +46,7 @@ Set rs = conn.Execute(sql)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訪廠管理</title>
+    <title>紀錄查詢By日期</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/visit_management.css">
 </head>
@@ -45,15 +58,21 @@ Set rs = conn.Execute(sql)
         <main class="main-content">
             <header class="top-bar">
                 <div class="search-bar">
-                    <input type="search" 
-                           id="visitSearch" 
-                           placeholder="搜尋公司名稱、訪廠人員或受訪人..."
-                           title="可輸入公司名稱、訪廠人員或受訪人進行搜尋">
+                    <input type="date" 
+                           id="startDate" 
+                           placeholder="開始日期"
+                           title="選擇開始日期">
+                    <span>~</span>
+                    <input type="date"
+                           id="endDate"
+                           placeholder="結束日期" 
+                           title="選擇結束日期">
+                    <button type="button" id="searchBtn" class="save-btn">搜尋</button>
                 </div>
             </header>
 
             <div class="content">
-                <h1>訪廠管理</h1>
+                <h1>紀錄查詢By日期</h1>
                 
                 <div class="visits-table-container">
                     <table class="visits-table">
@@ -74,24 +93,20 @@ Set rs = conn.Execute(sql)
                                     <td><%=rs("CompanyName")%></td>
                                     <td><%=rs("VisitorName")%></td>
                                     <td><%=rs("Interviewee")%></td>
-                                    <td><%=FormatDateTime(rs("VisitDate"),2)%></td>
-                                    <td><%
-                                    If IsNull(rs("LastAnswerDate")) Then
-                                        Response.Write("-")
-                                    Else
-                                        Response.Write(FormatDateTime(rs("LastAnswerDate"),2))
-                                    End If
-                                    %></td>
+                                    <td><%=FormatDateYMD(rs("VisitDate"))%></td>
+                                    <td><%=FormatDateYMD(rs("LastAnswerDate"))%></td>
                                     <td>
                                         <span class="status-badge <%=LCase(rs("Status"))%>">
                                             <%=rs("Status")%>
                                         </span>
                                     </td>
                                     <td class="actions">
-                                        <a href="#" 
-                                           class="edit-btn" onclick="editVisit(<%=rs("VisitID")%>)">編輯</a>
+                                        <a href="visit_questions.asp?vendor=<%=rs("CompanyName")%>" 
+                                           class="edit-btn">編輯</a>
                                         <a href="print_visit.asp?id=<%=rs("VisitID")%>" 
                                            class="edit-btn" target="_blank">訪廠紀錄表</a>
+                                        <a href="full_visit_records_by_date_range.asp?id=<%=rs("VisitorID")%>" 
+                                           class="edit-btn" target="_blank">完整紀錄表</a>
                                     </td>
                                 </tr>
                             <% 
@@ -106,23 +121,38 @@ Set rs = conn.Execute(sql)
     </div>
 
     <script>
-        // 搜尋功能
-        document.getElementById('visitSearch').addEventListener('input', function(e) {
-            const searchText = e.target.value.toLowerCase().trim();
+        // 日期範圍搜尋功能
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            // 驗證日期
+            if (!startDate || !endDate) {
+                alert('請選擇開始和結束日期');
+                return;
+            }
+            
+            if (startDate > endDate) {
+                alert('開始日期不能大於結束日期');
+                return;
+            }
+            
             const rows = document.querySelectorAll('.visits-table tbody tr');
             
             rows.forEach(row => {
-                const companyName = row.cells[0].textContent.toLowerCase(); // 公司名稱
-                const visitorName = row.cells[1].textContent.toLowerCase(); // 訪廠人員
-                const interviewee = row.cells[2].textContent.toLowerCase(); // 受訪人
+                const visitDate = row.cells[3].textContent; // 訪廠日期
                 
-                // 檢查是否符合任一搜尋條件
-                const matchCompany = companyName.includes(searchText);
-                const matchVisitor = visitorName.includes(searchText);
-                const matchInterviewee = interviewee.includes(searchText);
+                // 將日期字串轉換為Date物件進行比較
+                const visit = new Date(visitDate);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
                 
-                // 如果符合任一條件就顯示該列
-                row.style.display = (matchCompany || matchVisitor || matchInterviewee) ? '' : 'none';
+                // 設定時間為00:00:00以確保正確比較
+                start.setHours(0,0,0,0);
+                end.setHours(23,59,59,999);
+                
+                // 檢查訪廠日期是否在選擇的範圍內
+                row.style.display = (visit >= start && visit <= end) ? '' : 'none';
             });
         });
     </script>

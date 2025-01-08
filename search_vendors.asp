@@ -60,12 +60,12 @@ If Len(searchKeyword) > 0 Then
                     <div class="form-field">
                         <label for="parentCode">母代號</label>
                         <input type="text" id="parentCode" name="parentCode" maxlength="3" required 
-                               pattern="[0-9]{3}" title="請輸入3碼英數字" value="">
+                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字" value="">
                     </div>
                     <div class="form-field">
                         <label for="childCode">子代號</label>
                         <input type="text" id="childCode" name="childCode" maxlength="3" required 
-                               pattern="[0-9]{3}" title="請輸入3碼英數字">
+                               pattern="[A-Za-z0-9]{3}" title="請輸入3碼英數字">
                     </div>
                 </div>
                 <div class="form-field">
