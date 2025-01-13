@@ -61,6 +61,12 @@ On Error Goto 0
 ' 檢查登入結果
 If Not rs.EOF Then
     If rs("LoginStatus") Then
+        ' �查密碼是否過期
+        If IsPasswordExpired(rs("LastPasswordChangeDate")) Then
+            Response.Redirect "change_password.asp?expired=1"
+            Response.End
+        End If
+        
         ' 登入成功，設定 Session
         Session("UserID") = rs("UserID")
         Session("Username") = rs("Username")
@@ -89,4 +95,71 @@ If Not rs Is Nothing Then
     Set rs = Nothing
 End If
 Set cmd = Nothing
+
+
+Function SimpleEncrypt(inputText)
+    Dim i, charCode
+    Dim encryptedText
+    encryptedText = ""
+    
+    For i = 1 To Len(inputText)
+        charCode = AscW(Mid(inputText, i, 1))
+        charCode = charCode + 3 ' 將字符碼增加1（可以根據需要調整）
+        encryptedText = encryptedText & ChrW(charCode)
+    Next
+    
+    SimpleEncrypt = encryptedText
+End Function
+
+' 簡單的字符替換解密函數
+Function SimpleDecrypt(encryptedText)
+    Dim i, charCode
+    Dim decryptedText
+    decryptedText = ""
+    
+    For i = 1 To Len(encryptedText)
+        charCode = AscW(Mid(encryptedText, i, 1))
+        charCode = charCode - 3 ' 將字符碼減少1（必須與加密時相反）
+        decryptedText = decryptedText & ChrW(charCode)
+    Next
+    
+    SimpleDecrypt = decryptedText
+End Function
+
+Function IsPasswordValid(password)
+    ' 檢查密碼規則：至少6位,必須包含大小寫字母和數字
+    Dim passwordRegex
+    Set passwordRegex = New RegExp
+    passwordRegex.Global = True
+    passwordRegex.Pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$"
+    IsPasswordValid = passwordRegex.Test(password)
+    Set passwordRegex = Nothing
+End Function
+
+' 檢查密碼是否過期(超過3個月)
+Function IsPasswordExpired(lastChangeDate)
+    If IsNull(lastChangeDate) Then
+        IsPasswordExpired = True
+        Exit Function
+    End If
+    
+    Dim expiryDays: expiryDays = 90 ' 3個月 = 90天
+    IsPasswordExpired = DateDiff("d", lastChangeDate, Now()) > expiryDays
+End Function
+
+Function ReplaceBadChar(strChar)
+    If strChar = "" Or IsNull(strChar) Then
+        ReplaceBadChar = ""
+        Exit Function
+    End If
+    Dim strBadChar, arrBadChar, tempChar, i
+    strBadChar = "%,/,\,(,),<,>,',--,^,&,?,;,:," & Chr(34) & "," & Chr(0) & ""
+    arrBadChar = Split(strBadChar, ",")
+    tempChar = strChar
+    For i = 0 To UBound(arrBadChar)
+        tempChar = Replace(tempChar, arrBadChar(i), "")
+    Next
+    tempChar = Replace(tempChar, "@@", "@")
+    ReplaceBadChar = tempChar
+End Function
 %> 

@@ -32,8 +32,8 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
             <header class="top-bar">
                 <div class="search-bar">
                     <input type="search" id="vendorSearch" 
-                           placeholder="搜尋廠商 (代號/統編/名稱)..."
-                           title="可使用代號、統一編號或廠商名稱搜尋">
+                           placeholder="搜尋廠商 (可使用母代號、子代號、統一編號或廠商名稱搜尋)..."
+                           title="可使用母代號、子代號、統一編號或廠商名稱搜尋" class="save-btn" style="width: 600px;">
                 </div>
                 <div class="user-actions">
                     <button class="add-vendor-btn" onclick="showAddVendorModal()">新增廠商</button>
@@ -47,7 +47,8 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                     <table class="vendors-table">
                         <thead>
                             <tr>
-                                <th>代號</th>
+                                <th>母代號</th>
+                                <th>子代號</th>
                                 <th>統一編號</th>
                                 <th>廠商名稱</th>
                                 <th>聯絡人</th>
@@ -59,7 +60,8 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                         <tbody>
                             <% Do While Not rsVendors.EOF %>
                                 <tr class="<% If Not rsVendors("IsActive") Then Response.Write "inactive" %>">
-                                    <td><%=rsVendors("ParentCode")%>-<%=rsVendors("ChildCode")%></td>
+                                    <td><%=rsVendors("ParentCode")%></td>
+                                    <td><%=rsVendors("ChildCode")%></td>
                                     <td><%=rsVendors("UniformNumber")%></td>
                                     <td><%=rsVendors("VendorName")%></td>
                                     <td><%=rsVendors("ContactPerson")%></td>
@@ -122,9 +124,10 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                     <input type="text" id="vendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-group">
-                    <label for="contactPerson">客服聯絡人</label>
+                    <label for="contactPerson">聯絡窗口</label>
                     <input type="text" id="contactPerson" name="contactPerson" maxlength="100" required>
                 </div>
+                <!--
                 <div class="form-group">
                     <label for="logisticsContact">物流聯絡人</label>
                     <input type="text" id="logisticsContact" name="logisticsContact" maxlength="100">
@@ -137,14 +140,17 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                     <label for="phone">電話</label>
                     <input type="tel" id="phone" name="phone" maxlength="15">
                 </div>
+                -->
                 <div class="form-group">
                     <label for="address">地址</label>
                     <input type="text" id="address" name="address" maxlength="100">
                 </div>
-                <div class="form-group">
+                 <!--
+                 <div class="form-group">
                     <label for="email">電子郵件</label>
                     <input type="email" id="email" name="email" maxlength="100">
                 </div>
+                -->
                 <div class="form-group">
                     <label for="website">網址</label>
                     <input type="url" id="website" name="website" maxlength="250">
@@ -185,9 +191,10 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                     <input type="text" id="editVendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-group">
-                    <label for="editContactPerson">客服聯絡人</label>
+                    <label for="editContactPerson">聯絡窗口</label>
                     <input type="text" id="editContactPerson" name="contactPerson" maxlength="100" required>
                 </div>
+                <!--
                 <div class="form-group">
                     <label for="editLogisticsContact">物流聯絡人</label>
                     <input type="text" id="editLogisticsContact" name="logisticsContact" maxlength="100">
@@ -200,14 +207,17 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                     <label for="editPhone">電話</label>
                     <input type="tel" id="editPhone" name="phone" maxlength="15">
                 </div>
+                -->
                 <div class="form-group">
                     <label for="editAddress">地址</label>
                     <input type="text" id="editAddress" name="address" maxlength="100">
                 </div>
+                <!--
                 <div class="form-group">
                     <label for="editEmail">電子郵件</label>
                     <input type="email" id="editEmail" name="email" maxlength="100">
                 </div>
+                -->
                 <div class="form-group">
                     <label for="editWebsite">網址</label>
                     <input type="url" id="editWebsite" name="website" maxlength="250">

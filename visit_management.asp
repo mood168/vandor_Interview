@@ -24,6 +24,8 @@ sql = "WITH RankedVisits AS ( " & _
       "    SELECT " & _
       "        vr.VisitorID, vr.VisitID, " & _
       "        vr.CompanyName, " & _
+      "        ISNULL(v.ParentCode, '') as ParentCode, " & _
+      "        ISNULL(v.ChildCode, '') as ChildCode, " & _
       "        ISNULL(vr.Interviewee, '') as Interviewee, " & _
       "        vr.VisitDate, " & _
       "        vr.Status, " & _
@@ -33,6 +35,7 @@ sql = "WITH RankedVisits AS ( " & _
       "        ROW_NUMBER() OVER (PARTITION BY vr.CompanyName ORDER BY vr.VisitDate DESC) as RowNum " & _
       "    FROM VisitRecords vr " & _
       "    LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
+      "    LEFT JOIN Vendors v ON vr.CompanyName = v.VendorName " & _
       ") " & _
       "SELECT * FROM RankedVisits WHERE RowNum = 1 " & _
       "ORDER BY VisitDate DESC"
@@ -60,8 +63,28 @@ Set rs = conn.Execute(sql)
                 <div class="search-bar">
                     <input type="search" 
                            id="visitSearch" 
-                           placeholder="搜尋公司名稱、訪廠人員或受訪人..."
-                           title="可輸入公司名稱、訪廠人員或受訪人進行搜尋">
+                           placeholder="搜尋公司名稱..."
+                           title="輸入公司名稱搜尋" class="save-btn" style="width: 250px;">
+                           
+                    <input type="search" 
+                           id="parentCodeSearch" 
+                           placeholder="母代號..."
+                           title="輸入母代號搜尋" class="save-btn" style="width: 150px;">
+                           
+                    <input type="search" 
+                           id="childCodeSearch" 
+                           placeholder="子代號..."
+                           title="輸入子代號搜尋" class="save-btn" style="width: 150px;">
+                           
+                    <input type="search" 
+                           id="visitorSearch" 
+                           placeholder="訪廠人員..."
+                           title="輸入訪廠人員搜尋" class="save-btn" style="width: 250px;">
+                           
+                    <input type="search" 
+                           id="intervieweeSearch" 
+                           placeholder="受訪人..."
+                           title="輸入受訪人搜尋" class="save-btn" style="width: 250px;">
                 </div>
             </header>
 
@@ -73,6 +96,8 @@ Set rs = conn.Execute(sql)
                         <thead>
                             <tr>
                                 <th>公司名稱</th>
+                                <th>母代號</th>
+                                <th>子代號</th>
                                 <th>訪廠人員</th>
                                 <th>受訪人</th>
                                 <th>訪廠日期</th>
@@ -85,6 +110,8 @@ Set rs = conn.Execute(sql)
                             <% Do While Not rs.EOF %>
                                 <tr>
                                     <td><%=rs("CompanyName")%></td>
+                                    <td><%=rs("ParentCode")%></td>
+                                    <td><%=rs("ChildCode")%></td>
                                     <td><%=rs("VisitorName")%></td>
                                     <td><%=rs("Interviewee")%></td>
                                     <td><%=FormatDateYMD(rs("VisitDate"))%></td>
@@ -116,24 +143,41 @@ Set rs = conn.Execute(sql)
 
     <script>
         // 搜尋功能
-        document.getElementById('visitSearch').addEventListener('input', function(e) {
-            const searchText = e.target.value.toLowerCase().trim();
+        function updateSearch() {
+            const companySearchText = document.getElementById('visitSearch').value.toLowerCase().trim();
+            const parentCodeSearchText = document.getElementById('parentCodeSearch').value.toLowerCase().trim();
+            const childCodeSearchText = document.getElementById('childCodeSearch').value.toLowerCase().trim();
+            const visitorSearchText = document.getElementById('visitorSearch').value.toLowerCase().trim();
+            const intervieweeSearchText = document.getElementById('intervieweeSearch').value.toLowerCase().trim();
+            
             const rows = document.querySelectorAll('.visits-table tbody tr');
             
             rows.forEach(row => {
                 const companyName = row.cells[0].textContent.toLowerCase(); // 公司名稱
-                const visitorName = row.cells[1].textContent.toLowerCase(); // 訪廠人員
-                const interviewee = row.cells[2].textContent.toLowerCase(); // 受訪人
+                const parentCode = row.cells[1].textContent.toLowerCase(); // 母代號
+                const childCode = row.cells[2].textContent.toLowerCase(); // 子代號
+                const visitorName = row.cells[3].textContent.toLowerCase(); // 訪廠人員
+                const interviewee = row.cells[4].textContent.toLowerCase(); // 受訪人
                 
-                // 檢查是否符合任一搜尋條件
-                const matchCompany = companyName.includes(searchText);
-                const matchVisitor = visitorName.includes(searchText);
-                const matchInterviewee = interviewee.includes(searchText);
+                // 檢查是否符合所有搜尋條件
+                const matchCompany = !companySearchText || companyName.includes(companySearchText);
+                const matchParentCode = !parentCodeSearchText || parentCode.includes(parentCodeSearchText);
+                const matchChildCode = !childCodeSearchText || childCode.includes(childCodeSearchText);
+                const matchVisitor = !visitorSearchText || visitorName.includes(visitorSearchText);
+                const matchInterviewee = !intervieweeSearchText || interviewee.includes(intervieweeSearchText);
                 
-                // 如果符合任一條件就顯示該列
-                row.style.display = (matchCompany || matchVisitor || matchInterviewee) ? '' : 'none';
+                // 所有條件都必須符合
+                row.style.display = (matchCompany && matchParentCode && matchChildCode && 
+                                   matchVisitor && matchInterviewee) ? '' : 'none';
             });
-        });
+        }
+
+        // 為每個搜尋欄位添加事件監聽器
+        document.getElementById('visitSearch').addEventListener('input', updateSearch);
+        document.getElementById('parentCodeSearch').addEventListener('input', updateSearch);
+        document.getElementById('childCodeSearch').addEventListener('input', updateSearch);
+        document.getElementById('visitorSearch').addEventListener('input', updateSearch);
+        document.getElementById('intervieweeSearch').addEventListener('input', updateSearch);
     </script>
 
     <!-- 在表格之後，body 結束前添加 Modal -->

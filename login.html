@@ -11,6 +11,18 @@
     <div class="container">
       <div class="login-box">
         <h1>數網訪廠管理後台</h1>
+
+        <div
+          id="messageBox"
+          class="message-box"
+          style="
+            display: none;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 4px;
+          "
+        ></div>
+
         <form method="post" action="login_process.asp">
           <div class="input-group">
             <input type="text" id="username" name="username" required />
@@ -24,6 +36,16 @@
 
           <button class="submit-button" type="submit">登入</button>
         </form>
+        <div
+          class="change-password-link"
+          style="text-align: center; margin-top: 15px"
+        >
+          <a
+            href="change_password.asp"
+            style="color: var(--text-color); text-decoration: none"
+            >變更密碼</a
+          >
+        </div>
       </div>
     </div>
 
@@ -33,11 +55,22 @@
         const currentTheme = localStorage.getItem("theme") || "light";
         document.documentElement.setAttribute("data-theme", currentTheme);
 
+        // 顯示錯誤訊息
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get("error");
+        const message = urlParams.get("message");
+        const messageBox = document.getElementById("messageBox");
 
         if (error) {
-          alert(decodeURIComponent(error));
+          messageBox.style.display = "block";
+          messageBox.style.backgroundColor = "#ffe6e6";
+          messageBox.style.color = "#ff0000";
+          messageBox.textContent = decodeURIComponent(error);
+        } else if (message) {
+          messageBox.style.display = "block";
+          messageBox.style.backgroundColor = "#e6ffe6";
+          messageBox.style.color = "#008000";
+          messageBox.textContent = decodeURIComponent(message);
         }
       };
     </script>

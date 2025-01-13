@@ -1,5 +1,6 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <%
 Response.CharSet = "utf-8"
 
@@ -8,6 +9,11 @@ If Session("UserID") = "" Then
     Response.Redirect "login.html"
     Response.End
 End If
+
+' 定義ADODB常數
+Const adDate = 7
+Const adParamInput = 1
+Const adVarChar = 200
 
 ' 日期格式化函數
 Function FormatDateYMD(dateValue)
@@ -24,19 +30,38 @@ sql = "WITH RankedVisits AS ( " & _
       "    SELECT " & _
       "        vr.VisitorID, vr.VisitID, " & _
       "        vr.CompanyName, " & _
+      "        ISNULL(v.ParentCode, '') as ParentCode, " & _
+      "        ISNULL(v.ChildCode, '') as ChildCode, " & _
       "        ISNULL(vr.Interviewee, '') as Interviewee, " & _
       "        vr.VisitDate, " & _
       "        vr.Status, " & _
       "        ISNULL(u.FullName, '') as VisitorName, " & _
       "        ISNULL((SELECT TOP 1 ModifiedDate FROM VisitAnswers va " & _
       "         WHERE va.VisitID = vr.VisitID ORDER BY ModifiedDate DESC), vr.CreatedDate) as LastAnswerDate, " & _
-      "        ROW_NUMBER() OVER (PARTITION BY vr.CompanyName ORDER BY vr.VisitDate DESC) as RowNum " & _
+      "        ROW_NUMBER() OVER (PARTITION BY vr.CompanyName ORDER BY vr.VisitDate DESC) as RowNum, " & _
+      "        COUNT(*) OVER() as TotalCount " & _
       "    FROM VisitRecords vr " & _
       "    LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
-      ") " & _
-      "SELECT * FROM RankedVisits WHERE RowNum = 1 " & _
-      "ORDER BY VisitDate DESC"
+      "    LEFT JOIN Vendors v ON vr.CompanyName = v.VendorName " & _
+      "    WHERE 1=1 "
 
+' 取得日期參數
+Dim startDate, endDate
+startDate = Request.QueryString("startDate")
+endDate = Request.QueryString("endDate")
+
+' 根據日期參數動態添加條件
+If startDate <> "" Then
+    sql = sql & " AND vr.VisitDate >= '" & startDate & "'"
+End If
+
+If endDate <> "" Then
+    sql = sql & " AND vr.VisitDate <= '" & endDate & "'"
+End If
+
+sql = sql & " ) SELECT * FROM RankedVisits WHERE RowNum = 1 ORDER BY VisitDate DESC"
+
+' 執行查詢
 Dim rs
 Set rs = conn.Execute(sql)
 %>
@@ -46,9 +71,27 @@ Set rs = conn.Execute(sql)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>紀錄查詢By日期</title>
+    <title>訪廠紀錄查詢</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/visit_management.css">
+    <style>
+        .search-bar select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .result-count {
+            margin: 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        #visitorFilter {
+            min-width: 150px;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -61,24 +104,57 @@ Set rs = conn.Execute(sql)
                     <input type="date" 
                            id="startDate" 
                            placeholder="開始日期"
-                           title="選擇開始日期">
+                           title="選擇開始日期" class="save-btn">
                     <span>~</span>
                     <input type="date"
                            id="endDate"
                            placeholder="結束日期" 
-                           title="選擇結束日期">
+                           title="選擇結束日期" class="save-btn">
+                    
+                    <select id="visitorFilter" title="選擇訪廠人員" class="save-btn">
+                        <option value="">全部人員</option>
+                        <% 
+                        Dim rsVisitors
+                        Set rsVisitors = conn.Execute("SELECT DISTINCT u.UserID, u.FullName FROM Users u INNER JOIN VisitRecords vr ON u.UserID = vr.VisitorID WHERE u.IsActive = 1 ORDER BY u.FullName")
+                        Do While Not rsVisitors.EOF 
+                        %>
+                            <option value="<%=rsVisitors("UserID")%>"><%=rsVisitors("FullName")%></option>
+                        <%
+                            rsVisitors.MoveNext
+                        Loop
+                        %>
+                    </select>
+
+                    <input type="text" 
+                           id="parentCodeFilter" 
+                           placeholder="母代號"
+                           title="輸入母代號搜尋" 
+                           class="save-btn" style="width: 100px;">
+                    
+                    <input type="text" 
+                           id="childCodeFilter" 
+                           placeholder="子代號"
+                           title="輸入子代號搜尋" 
+                           class="save-btn" style="width: 100px;">
+                    
                     <button type="button" id="searchBtn" class="save-btn">搜尋</button>
+                </div>
+
+                <div class="result-count">
+                    查詢結果: <span id="resultCount">0</span> 筆
                 </div>
             </header>
 
             <div class="content">
-                <h1>紀錄查詢By日期</h1>
+                <h1>訪廠紀錄查詢</h1>
                 
                 <div class="visits-table-container">
                     <table class="visits-table">
                         <thead>
                             <tr>
                                 <th>公司名稱</th>
+                                <th>母代號</th>
+                                <th>子代號</th>
                                 <th>訪廠人員</th>
                                 <th>受訪人</th>
                                 <th>訪廠日期</th>
@@ -89,8 +165,10 @@ Set rs = conn.Execute(sql)
                         </thead>
                         <tbody>
                             <% Do While Not rs.EOF %>
-                                <tr>
+                                <tr data-visitor-id="<%=rs("VisitorID")%>">
                                     <td><%=rs("CompanyName")%></td>
+                                    <td><%=rs("ParentCode")%></td>
+                                    <td><%=rs("ChildCode")%></td>
                                     <td><%=rs("VisitorName")%></td>
                                     <td><%=rs("Interviewee")%></td>
                                     <td><%=FormatDateYMD(rs("VisitDate"))%></td>
@@ -121,39 +199,68 @@ Set rs = conn.Execute(sql)
     </div>
 
     <script>
+        // 初始化結果數量
+        window.addEventListener('load', function() {
+            const visibleRows = document.querySelectorAll('.visits-table tbody tr:not([style*="display: none"])').length;
+            document.getElementById('resultCount').textContent = visibleRows;
+        });
+
         // 日期範圍搜尋功能
         document.getElementById('searchBtn').addEventListener('click', function() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
+            const selectedVisitor = document.getElementById('visitorFilter').value;
+            const parentCode = document.getElementById('parentCodeFilter').value.toLowerCase().trim();
+            const childCode = document.getElementById('childCodeFilter').value.toLowerCase().trim();
             
-            // 驗證日期
-            if (!startDate || !endDate) {
-                alert('請選擇開始和結束日期');
-                return;
-            }
-            
-            if (startDate > endDate) {
+            // 驗證日期邏輯
+            if (startDate && endDate && startDate > endDate) {
                 alert('開始日期不能大於結束日期');
                 return;
             }
             
             const rows = document.querySelectorAll('.visits-table tbody tr');
+            let visibleCount = 0;
             
             rows.forEach(row => {
-                const visitDate = row.cells[3].textContent; // 訪廠日期
+                const visitDate = row.cells[5].textContent; // 訪廠日期索引從3改為5
+                const visitorId = row.getAttribute('data-visitor-id'); // 訪廠人員ID
+                const rowParentCode = row.cells[1].textContent.toLowerCase(); // 母代號
+                const rowChildCode = row.cells[2].textContent.toLowerCase(); // 子代號
                 
-                // 將日期字串轉換為Date物件進行比較
-                const visit = new Date(visitDate);
-                const start = new Date(startDate);
-                const end = new Date(endDate);
+                // 日期篩選邏輯
+                let dateMatch = true;
+                if (startDate && endDate) {
+                    const visit = new Date(visitDate);
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    
+                    // 設定時間為00:00:00以確保正確比較
+                    start.setHours(0,0,0,0);
+                    end.setHours(23,59,59,999);
+                    visit.setHours(12,0,0,0); // 設定訪廠日期為中午以避免時區問題
+                    
+                    dateMatch = visit >= start && visit <= end;
+                }
                 
-                // 設定時間為00:00:00以確保正確比較
-                start.setHours(0,0,0,0);
-                end.setHours(23,59,59,999);
+                // 訪廠人員篩選邏輯
+                const visitorMatch = !selectedVisitor || visitorId === selectedVisitor;
                 
-                // 檢查訪廠日期是否在選擇的範圍內
-                row.style.display = (visit >= start && visit <= end) ? '' : 'none';
+                // 代號篩選邏輯
+                const parentCodeMatch = !parentCode || rowParentCode.includes(parentCode);
+                const childCodeMatch = !childCode || rowChildCode.includes(childCode);
+                
+                // 組合所有篩選條件
+                const shouldShow = dateMatch && visitorMatch && parentCodeMatch && childCodeMatch;
+                row.style.display = shouldShow ? '' : 'none';
+                
+                if (shouldShow) {
+                    visibleCount++;
+                }
             });
+            
+            // 更新結果數量顯示
+            document.getElementById('resultCount').textContent = visibleCount;
         });
     </script>
 

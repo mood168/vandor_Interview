@@ -43,7 +43,7 @@
                 Response.Write("active")
             End If
             %>" style="font-size: 1.2rem;">
-                <span class="icon">📅</span>紀錄查詢By日期
+                <span class="icon">📅</span>訪廠紀錄查詢
             </a></li>
             <li><a href="user_management.asp" class="<%
             If Request.ServerVariables("SCRIPT_NAME") = "/user_management.asp" Then
