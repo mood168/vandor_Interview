@@ -148,7 +148,7 @@ Set basicInfo = rs
         <div class="company-info">            
             <div class="info-row" style="display: flex; gap: 20px;">
                 <div style="flex: 1;">
-                    <label>廠商名稱 / 統編：</label>
+                    <label>電商名稱 / 統編：</label>
                     <span><%=basicInfo("CompanyName")%> / <%=basicInfo("UniformNumber")%></span>
                 </div>
                 <div style="flex: 1;">

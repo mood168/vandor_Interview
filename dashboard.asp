@@ -9,6 +9,12 @@ If Session("UserID") = "" Then
     Response.End
 End If
 
+'  檢查是否為管理員
+' If Session("UserRole") <> "Admin" Then
+'     Response.Redirect "dashboard.asp"
+'     Response.End
+' End If
+
 ' 處理搜尋請求
 Dim searchKeyword, sql, rs
 If Request.QueryString("searchKeyword") <> "" Then
@@ -34,7 +40,7 @@ End If
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系統管理後台</title>
+    <title>電商訪談系統管理後台</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <style>
         .search-container {
@@ -101,7 +107,7 @@ End If
             background-color: var(--primary-hover);
         }
 
-        /* 新增廠商表單樣式 */
+        /* 新增電商表單樣式 */
         .add-vendor-form {
             display: none; /* 預設隱藏表單 */
             margin-top: 30px;
@@ -239,7 +245,7 @@ End If
             <div class="search-container">
                 <div class="search-form">
                     <input type="text" name="searchKeyword" class="search-input" 
-                           placeholder="請輸入 母代號 / 子代號 / 廠商名稱 / 統一編號 搜尋..." 
+                           placeholder="請輸入 母代號 / 子代號 / 電商名稱 / 統一編號 搜尋..." 
                            value="<%= searchKeyword %>">
                     <button type="button" class="search-button" onclick="window.location.href='dashboard.asp'">清除</button>                    
                 </div>

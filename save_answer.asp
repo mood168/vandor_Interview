@@ -37,21 +37,21 @@ If visitDate = "" Then HandleError "未提供訪談日期"
 
 Dim vendorId, visitId
 
-' 先查詢廠商ID
+' 先查詢電商ID
 Dim sql
 sql = "SELECT VendorID FROM Vendors WHERE VendorName = N'" & Replace(companyName, "'", "''") & "' AND IsActive = 1"
 Set rs = Server.CreateObject("ADODB.Recordset")
 rs.Open sql, conn, 1, 1
 
 If Err.Number <> 0 Then
-    HandleError "查詢廠商資料時發生錯誤: " & Err.Description & " SQL: " & sql
+    HandleError "查詢電商資料時發生錯誤: " & Err.Description & " SQL: " & sql
     Response.End
 End If
 
 If rs.EOF Then
     rs.Close
     Set rs = Nothing
-    HandleError "找不到對應的廠商資料：" & companyName
+    HandleError "找不到對應的電商資料：" & companyName
     Response.End
 End If
 

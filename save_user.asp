@@ -38,8 +38,8 @@ Dim sql
 If userId = "" Then
     ' 新增使用者
     sql = "INSERT INTO Users (Username, Password, FullName, Phone, Email, Department, UserRole, IsActive, LastPasswordChangeDate) VALUES (" & _
-          SafeSQL(username) & ", " & _
-          SafeSQL(password) & ", " & _
+          SafeSQL(SimpleEncrypt(username)) & ", " & _
+          SafeSQL(SimpleEncrypt(password)) & ", " & _
           SafeSQL(fullName) & ", " & _
           SafeSQL(phone) & ", " & _
           SafeSQL(email) & ", " & _
@@ -49,8 +49,8 @@ If userId = "" Then
 Else
     ' 更新使用者
     sql = "UPDATE Users SET " & _
-          "Username = " & SafeSQL(username) & ", " & _
-          "Password = " & SafeSQL(password) & ", " & _
+          "Username = " & SafeSQL(SimpleEncrypt(username)) & ", " & _
+          "Password = " & SafeSQL(SimpleEncrypt(password)) & ", " & _
           "FullName = " & SafeSQL(fullName) & ", " & _
           "Phone = " & SafeSQL(phone) & ", " & _
           "Email = " & SafeSQL(email) & ", " & _

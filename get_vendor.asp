@@ -26,16 +26,16 @@ If Session("UserID") = "" Then
     Response.End
 End If
 
-' 取得廠商ID
+' 取得電商ID
 vendorId = Request.QueryString("id")
 If vendorId = "" Then
-    Response.Write "{""success"": false, ""message"": ""未提供廠商ID""}"
+    Response.Write "{""success"": false, ""message"": ""未提供電商ID""}"
     Response.End
 End If
 
 On Error Resume Next
 
-' SQL 查詢廠商資料
+' SQL 查詢電商資料
 sql = "SELECT VendorID, ParentCode, ChildCode, UniformNumber, VendorName, " & _
       "ContactPerson, ISNULL(LogisticsContact, '') AS LogisticsContact, " & _
       "ISNULL(MarketingContact, '') AS MarketingContact, " & _
@@ -51,7 +51,7 @@ If Err.Number <> 0 Then
 End If
 
 If rs.EOF Then
-    Response.Write "{""success"": false, ""message"": ""找不到廠商資料""}"
+    Response.Write "{""success"": false, ""message"": ""找不到電商資料""}"
 Else
     ' 組織 JSON 回應
     Response.Write "{"

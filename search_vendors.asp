@@ -30,7 +30,7 @@ If Len(searchKeyword) > 0 Then
                 <tr>
                     <th>母代號</th>
                     <th>子代號</th>
-                    <th>廠商名稱</th>
+                    <th>電商名稱</th>
                     <th>統一編號</th>
                 </tr>
             </thead>
@@ -54,7 +54,7 @@ If Len(searchKeyword) > 0 Then
         ' 只有在有搜尋關鍵字且查無結果時才顯示表單
 %>
         <div class="add-vendor-form">
-            <h2>新增廠商資訊</h2>
+            <h2>新增電商資訊</h2>
             <form action="save_vendor.asp" method="post">
                 <div class="form-grid">
                     <div class="form-field">
@@ -74,7 +74,7 @@ If Len(searchKeyword) > 0 Then
                            pattern="[0-9]{8}" title="請輸入8碼數字">
                 </div>
                 <div class="form-field">
-                    <label for="vendorName">廠商名稱</label>
+                    <label for="vendorName">電商名稱</label>
                     <input type="text" id="vendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-field">

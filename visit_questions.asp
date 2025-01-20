@@ -26,7 +26,7 @@ End If
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訪廠題庫列表</title>
+    <title>電商訪談系統</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/visit_questions.css">
     <style>
@@ -219,7 +219,7 @@ End If
             </header>
 
             <div class="visit-form-container">
-                <h1>訪廠記錄表</h1>
+                <h1>電商訪談記錄表</h1>
                 
                 <form id="visitForm" action="save_visit.asp" method="post">
                     <div class="company-info">
@@ -243,7 +243,7 @@ End If
                             <label for="visitDate">訪談日期</label>
                             <input type="date" id="visitDate" name="visitDate" required
                                    value="<%=Year(Date()) & "-" & Right("0" & Month(Date()), 2) & "-" & Right("0" & Day(Date()), 2)%>">
-                        </div>
+                        </div>                        
                     </div>
 
                     <div class="questions-container">
@@ -335,7 +335,7 @@ End If
                                                                         Dim placeString
                                                                         placeString = "請輸入網站系統商"
                                                                     Else
-                                                                        placeString = "請輸入倉儲物流廠商"  
+                                                                        placeString = "請輸入倉儲物流電商"  
                                                                     End If
                                                                 %>
                                                                     <div class="vendor-info-container">
@@ -646,7 +646,7 @@ End If
                         if (percentInput && percentInput.value) {
                             answer += `${percentInput.value}%`;
                         }
-                        // 檢查是否有廠商和地址輸入
+                        // 檢查是否有電商和地址輸入
                         const vendorInput = questionContainer.querySelector(`[name="q_${questionId}_vendor_${selectedRadio.value}"]`);
                         const addressInput = questionContainer.querySelector(`[name="q_${questionId}_address_${selectedRadio.value}"]`);
                         if (vendorInput && vendorInput.value) {

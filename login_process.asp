@@ -38,8 +38,8 @@ cmd.CommandType = 4 ' adCmdStoredProc
 cmd.CommandText = "sp_UserLogin"
 
 ' 設定參數
-cmd.Parameters.Append cmd.CreateParameter("@Username", 200, 1, 500, username)
-cmd.Parameters.Append cmd.CreateParameter("@Password", 200, 1, 500, password)
+cmd.Parameters.Append cmd.CreateParameter("@Username", 200, 1, 500, SimpleEncrypt(username))
+cmd.Parameters.Append cmd.CreateParameter("@Password", 200, 1, 500, SimpleEncrypt(password))
 cmd.Parameters.Append cmd.CreateParameter("@LoginIP", 200, 1, 50, userIP)
 
 ' 執行預存程序
@@ -61,7 +61,7 @@ On Error Goto 0
 ' 檢查登入結果
 If Not rs.EOF Then
     If rs("LoginStatus") Then
-        ' �查密碼是否過期
+        ' 查密碼是否過期
         If IsPasswordExpired(rs("LastPasswordChangeDate")) Then
             Response.Redirect "change_password.asp?expired=1"
             Response.End
@@ -69,9 +69,10 @@ If Not rs.EOF Then
         
         ' 登入成功，設定 Session
         Session("UserID") = rs("UserID")
-        Session("Username") = rs("Username")
+        Session("Username") = SimpleDecrypt(rs("Username"))
         Session("FullName") = rs("FullName")
         Session("UserRole") = rs("UserRole")
+        Session("IsActive") = rs("IsActive")
         Session("LoginTime") = Now()
         
         ' 清理資源

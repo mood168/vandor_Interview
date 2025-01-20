@@ -159,7 +159,7 @@ Set rsAnswers = conn.Execute(sqlAnswers)
         <div class="company-info">            
             <div class="info-row" style="display: flex; gap: 20px;">
                 <div style="flex: 1;">
-                    <label>廠商名稱 / 統編：</label>
+                    <label>電商名稱 / 統編：</label>
                     <span><%=rs("CompanyName")%> / <%=rs("UniformNumber")%></span>
                 </div>
                 <div style="flex: 1;">
@@ -185,7 +185,7 @@ Set rsAnswers = conn.Execute(sqlAnswers)
                     <span><%=rs("ContactPerson")%></span>
                 </div>
                 <div style="flex: 1;">
-                    <label>受訪廠商簽名：</label>
+                    <label>受訪電商簽名：</label>
                     <span>______________________</span>
                 </div>
                 <div style="flex: 1;"></div>

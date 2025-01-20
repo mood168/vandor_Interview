@@ -9,11 +9,11 @@ If Session("UserID") = "" Then
     Response.End
 End If
 
-' 檢查是否為管理員
-If Session("UserRole") <> "Admin" Then
-    Response.Redirect "dashboard.asp"
-    Response.End
-End If
+'  檢查是否為管理員
+' If Session("UserRole") <> "Admin" Then
+'     Response.Redirect "dashboard.asp"
+'     Response.End
+' End If
 
 ' 取得使用者列表
 Dim rsUsers
@@ -64,7 +64,7 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                         <tbody>
                             <% Do While Not rsUsers.EOF %>
                                 <tr>
-                                    <td><%=rsUsers("Username")%></td>
+                                    <td><%=SimpleDecrypt(rsUsers("Username"))%></td>
                                     <td><%=rsUsers("FullName")%></td>
                                     <td><%=rsUsers("Department")%></td>
                                     <td><%=rsUsers("Phone")%></td>
@@ -112,8 +112,15 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                     <input type="text" id="newUsername" name="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="newPassword">密碼</label>
+                    <label for="newPassword">密碼</label>                    
                     <input type="password" id="newPassword" name="password" required>
+                    <ul style="padding-left: 30px; margin: 5px 0;">
+                        <li>至少6個字符</li>
+                        <li>必須包含大寫字母</li>
+                        <li>必須包含小寫字母</li>
+                        <li>必須包含數字</li>
+                        <li>每3個月需要更換一次密碼</li>
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label for="newFullName">姓名</label>
@@ -160,6 +167,13 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                 <div class="form-group">
                     <label for="editPassword">密碼 (若不修改請留空)</label>
                     <input type="password" id="editPassword" name="password">
+                    <ul style="padding-left: 30px; margin: 5px 0;">
+                        <li>至少6個字符</li>
+                        <li>必須包含大寫字母</li>
+                        <li>必須包含小寫字母</li>
+                        <li>必須包含數字</li>
+                        <li>每3個月需要更換一次密碼</li>
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label for="editFullName">姓名</label>
@@ -177,6 +191,7 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                     <label for="editDepartment">部門</label>
                     <input type="text" id="editDepartment" name="department">
                 </div>
+                <% If Session("UserRole") <> "User" Then %>
                 <div class="form-group">
                     <label for="editUserRole">角色</label>
                     <select id="editUserRole" class="user-role-select" name="userRole" required>
@@ -192,6 +207,10 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                         <option value="0" class="user-status-option">停用</option>
                     </select>
                 </div>
+                <% Else %>
+                    <input type="hidden" id="editUserRole" name="userRole" value="<%=Session("UserRole")%>">
+                    <input type="hidden" id="editUserStatus" name="userStatus" value="<%=Session("IsActive")%>">
+                <% End If %>
                 <div class="modal-actions">
                     <button type="submit" class="save-btn">儲存</button>
                     <button type="button" class="cancel-btn" onclick="hideEditUserModal()">取消</button>
@@ -233,7 +252,7 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                 .then(data => {
                     if (data.success) {
                         document.getElementById('editUserId').value = data.UserID;
-                        document.getElementById('editUsername').value = data.Username;
+                        document.getElementById('editUsername').value = '<%=Session("Username")%>';
                         document.getElementById('editFullName').value = data.FullName;
                         document.getElementById('editPhone').value = data.Phone || '';
                         document.getElementById('editEmail').value = data.Email || '';
@@ -262,3 +281,34 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
     </script>
 </body>
 </html> 
+
+<%
+Function SimpleEncrypt(inputText)
+    Dim i, charCode
+    Dim encryptedText
+    encryptedText = ""
+    
+    For i = 1 To Len(inputText)
+        charCode = AscW(Mid(inputText, i, 1))
+        charCode = charCode + 3 ' 將字符碼增加1（可以根據需要調整）
+        encryptedText = encryptedText & ChrW(charCode)
+    Next
+    
+    SimpleEncrypt = encryptedText
+End Function
+
+' 簡單的字符替換解密函數
+Function SimpleDecrypt(encryptedText)
+    Dim i, charCode
+    Dim decryptedText
+    decryptedText = ""
+    
+    For i = 1 To Len(encryptedText)
+        charCode = AscW(Mid(encryptedText, i, 1))
+        charCode = charCode - 3 ' 將字符碼減少1（必須與加密時相反）
+        decryptedText = decryptedText & ChrW(charCode)
+    Next
+    
+    SimpleDecrypt = decryptedText
+End Function
+%>

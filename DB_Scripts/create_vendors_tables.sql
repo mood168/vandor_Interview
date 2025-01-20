@@ -1,4 +1,4 @@
--- 建立廠商資料表
+-- 建立電商資料表
 CREATE TABLE [dbo].[Vendors](
     [VendorID] [int] IDENTITY(1,1) PRIMARY KEY,
     [ParentCode] [char](3) NOT NULL,
@@ -31,7 +31,7 @@ CREATE UNIQUE INDEX [IX_Vendors_UniformNumber] ON [dbo].[Vendors]
 )
 GO
 
--- 建立預存程序：新增廠商
+-- 建立預存程序：新增電商
 CREATE PROCEDURE [dbo].[usp_AddVendor]
     @ParentCode char(3),
     @ChildCode char(3),
@@ -76,7 +76,7 @@ BEGIN
 END
 GO
 
--- 建立預存程序：更新廠商
+-- 建立預存程序：更新電商
 CREATE PROCEDURE [dbo].[usp_UpdateVendor]
     @VendorID int,
     @VendorName nvarchar(100),
@@ -106,7 +106,7 @@ BEGIN
 END
 GO
 
--- 建立預存程序：刪除廠商（軟刪除）
+-- 建立預存程序：刪除電商（軟刪除）
 CREATE PROCEDURE [dbo].[usp_DeleteVendor]
     @VendorID int,
     @ModifiedBy int

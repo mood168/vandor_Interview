@@ -1,4 +1,4 @@
--- 建立啟用廠商的預存程序
+-- 建立啟用電商的預存程序
 CREATE PROCEDURE sp_ActivateVendor
     @VendorID int,
     @ModifiedBy int

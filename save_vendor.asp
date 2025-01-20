@@ -39,7 +39,7 @@ searchKeyword = Request.Form("searchKeyword")
 If parentCode = "" Then HandleError("母代號不能為空")
 If childCode = "" Then HandleError("子代號不能為空")
 If uniformNumber = "" Then HandleError("統一編號不能為空")
-If vendorName = "" Then HandleError("廠商名稱不能為空")
+If vendorName = "" Then HandleError("電商名稱不能為空")
 If contactPerson = "" Then HandleError("聯絡人不能為空")
 
 
@@ -54,7 +54,7 @@ End Function
 
 Dim sql
 If vendorId = "" Then
-    ' 新增廠商
+    ' 新增電商
     sql = "INSERT INTO Vendors (ParentCode, ChildCode, UniformNumber, VendorName, ContactPerson, " & _
           "LogisticsContact, MarketingContact, Phone, Address, Email, Website, IsActive, CreatedDate) VALUES (" & _
           SafeSQL(parentCode) & ", " & _
@@ -70,7 +70,7 @@ If vendorId = "" Then
           SafeSQL(website) & ", " & _
           "1, GETDATE())"
 Else
-    ' 更新廠商
+    ' 更新電商
     sql = "UPDATE Vendors SET " & _
           "ParentCode = " & SafeSQL(parentCode) & ", " & _
           "ChildCode = " & SafeSQL(childCode) & ", " & _

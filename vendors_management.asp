@@ -9,7 +9,7 @@ If Session("UserID") = "" Then
     Response.End
 End If
 
-' 取得廠商列表
+' 取得電商列表
 Dim rsVendors
 Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, CreatedDate DESC")
 %>
@@ -19,7 +19,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>廠商管理</title>
+    <title>電商訪談電商管理</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/vendors_management.css">
 </head>
@@ -31,17 +31,48 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
         <main class="main-content">
             <header class="top-bar">
                 <div class="search-bar">
-                    <input type="search" id="vendorSearch" 
-                           placeholder="搜尋廠商 (可使用母代號、子代號、統一編號或廠商名稱搜尋)..."
-                           title="可使用母代號、子代號、統一編號或廠商名稱搜尋" class="save-btn" style="width: 600px;">
+                    <input type="search" 
+                           id="parentCodeSearch" 
+                           placeholder="母代號..."
+                           title="輸入母代號搜尋" 
+                           class="save-btn" 
+                           style="width: 140px;">
+                           
+                    <input type="search" 
+                           id="childCodeSearch" 
+                           placeholder="子代號..."
+                           title="輸入子代號搜尋" 
+                           class="save-btn" 
+                           style="width: 140px;">
+                           
+                    <input type="search" 
+                           id="uniformNumberSearch" 
+                           placeholder="統一編號..."
+                           title="輸入統一編號搜尋" 
+                           class="save-btn" 
+                           style="width: 180px;">
+                           
+                    <input type="search" 
+                           id="vendorNameSearch" 
+                           placeholder="電商名稱..."
+                           title="輸入電商名稱搜尋" 
+                           class="save-btn" 
+                           style="width: 250px;">
+                           
+                    <input type="search" 
+                           id="contactPersonSearch" 
+                           placeholder="聯絡人..."
+                           title="輸入聯絡人搜尋" 
+                           class="save-btn" 
+                           style="width: 160px;">
                 </div>
                 <div class="user-actions">
-                    <button class="add-vendor-btn" onclick="showAddVendorModal()">新增廠商</button>
+                    <button class="add-vendor-btn" onclick="showAddVendorModal()">新增電商</button>
                 </div>
             </header>
 
             <div class="content">
-                <h1>廠商管理</h1>
+                <h1>電商資料管理</h1>
                 
                 <div class="vendors-table-container">
                     <table class="vendors-table">
@@ -50,7 +81,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                                 <th>母代號</th>
                                 <th>子代號</th>
                                 <th>統一編號</th>
-                                <th>廠商名稱</th>
+                                <th>電商名稱</th>
                                 <th>聯絡人</th>
                                 <th>電話</th>
                                 <th>地址</th>
@@ -96,10 +127,10 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
         </main>
     </div>
 
-    <!-- 新增廠商 Modal -->
+    <!-- 新增電商 Modal -->
     <div id="vendorModal" class="modal">
         <div class="modal-content">
-            <h2>新增廠商</h2>
+            <h2>新增電商</h2>
             <form id="vendorForm" action="save_vendor.asp" method="post">
                 <input type="hidden" id="vendorId" name="vendorId">
                 <div class="form-row">
@@ -120,7 +151,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                            pattern="[0-9]{8}" title="請輸入8碼數字">
                 </div>
                 <div class="form-group">
-                    <label for="vendorName">廠商名稱</label>
+                    <label for="vendorName">電商名稱</label>
                     <input type="text" id="vendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-group">
@@ -163,10 +194,10 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
         </div>
     </div>
 
-    <!-- 編輯廠商 Modal -->
+    <!-- 編輯電商 Modal -->
     <div id="editVendorModal" class="modal">
         <div class="modal-content">
-            <h2>編輯廠商</h2>
+            <h2>編輯電商</h2>
             <form id="editVendorForm" action="save_vendor.asp" method="post">
                 <input type="hidden" id="editVendorId" name="vendorId">
                 <div class="form-row">
@@ -187,7 +218,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                            pattern="[0-9]{8}" title="請輸入8碼數字">
                 </div>
                 <div class="form-group">
-                    <label for="editVendorName">廠商名稱</label>
+                    <label for="editVendorName">電商名稱</label>
                     <input type="text" id="editVendorName" name="vendorName" maxlength="100" required>
                 </div>
                 <div class="form-group">
@@ -250,29 +281,46 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
             document.getElementById('editVendorModal').style.display = 'none';
         }
 
-        // 廠商搜尋
-        document.getElementById('vendorSearch').addEventListener('input', function(e) {
-            const searchText = e.target.value.toLowerCase().trim();
+        // 電商搜尋
+        function updateSearch() {
+            const parentCodeText = document.getElementById('parentCodeSearch').value.toLowerCase().trim();
+            const childCodeText = document.getElementById('childCodeSearch').value.toLowerCase().trim();
+            const uniformNumberText = document.getElementById('uniformNumberSearch').value.toLowerCase().trim();
+            const vendorNameText = document.getElementById('vendorNameSearch').value.toLowerCase().trim();
+            const contactPersonText = document.getElementById('contactPersonSearch').value.toLowerCase().trim();
+            
             const rows = document.querySelectorAll('.vendors-table tbody tr');
             
             rows.forEach(row => {
-                const code = row.cells[0].textContent.toLowerCase().replace('-', ''); // 母代號+子代號
-                const uniformNumber = row.cells[1].textContent.toLowerCase(); // 統一編號
-                const vendorName = row.cells[2].textContent.toLowerCase(); // 廠商名稱
+                const parentCode = row.cells[0].textContent.toLowerCase(); // 母代號
+                const childCode = row.cells[1].textContent.toLowerCase(); // 子代號
+                const uniformNumber = row.cells[2].textContent.toLowerCase(); // 統一編號
+                const vendorName = row.cells[3].textContent.toLowerCase(); // 電商名稱
+                const contactPerson = row.cells[4].textContent.toLowerCase(); // 聯絡人
                 
-                // 檢查是否符合任一搜尋條件
-                const matchCode = code.includes(searchText.replace('-', '')); // 移除連字符進行比對
-                const matchUniformNumber = uniformNumber.includes(searchText);
-                const matchVendorName = vendorName.includes(searchText);
+                // 檢查是否符合所有搜尋條件
+                const matchParentCode = !parentCodeText || parentCode.includes(parentCodeText);
+                const matchChildCode = !childCodeText || childCode.includes(childCodeText);
+                const matchUniformNumber = !uniformNumberText || uniformNumber.includes(uniformNumberText);
+                const matchVendorName = !vendorNameText || vendorName.includes(vendorNameText);
+                const matchContactPerson = !contactPersonText || contactPerson.includes(contactPersonText);
                 
-                // 如果符合任一條件就顯示該列
-                row.style.display = (matchCode || matchUniformNumber || matchVendorName) ? '' : 'none';
+                // 所有條件都必須符合
+                row.style.display = (matchParentCode && matchChildCode && matchUniformNumber && 
+                                   matchVendorName && matchContactPerson) ? '' : 'none';
             });
-        });
+        }
 
-        // 刪除廠商
+        // 為每個搜尋欄位添加事件監聽器
+        document.getElementById('parentCodeSearch').addEventListener('input', updateSearch);
+        document.getElementById('childCodeSearch').addEventListener('input', updateSearch);
+        document.getElementById('uniformNumberSearch').addEventListener('input', updateSearch);
+        document.getElementById('vendorNameSearch').addEventListener('input', updateSearch);
+        document.getElementById('contactPersonSearch').addEventListener('input', updateSearch);
+
+        // 刪除電商
         function deleteVendor(vendorId) {
-            if (confirm('確定要刪除此廠商嗎？')) {
+            if (confirm('確定要刪除此電商嗎？')) {
                 fetch('delete_vendor.asp', {
                     method: 'POST',
                     headers: {
@@ -291,9 +339,9 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
             }
         }
 
-        // 啟用廠商
+        // 啟用電商
         function activateVendor(vendorId) {
-            if (confirm('確定要啟用此廠商嗎？')) {
+            if (confirm('確定要啟用此電商嗎？')) {
                 fetch('activate_vendor.asp', {
                     method: 'POST',
                     headers: {
@@ -312,7 +360,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
             }
         }
 
-        // 編輯廠商
+        // 編輯電商
         function editVendor(vendorId) {
             fetch(`get_vendor.asp?id=${vendorId}`)
                 .then(response => response.text())  // 先取得原始回應文字
@@ -335,7 +383,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                             
                             showEditVendorModal();
                         } else {
-                            alert(data.message || '載入廠商資料失敗');
+                            alert(data.message || '載入電商資料失敗');
                         }
                     } catch (e) {
                         console.error('JSON 解析錯誤:', e);
@@ -345,7 +393,7 @@ Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, Crea
                 })
                 .catch(error => {
                     console.error('網路錯誤:', error);
-                    alert('載入廠商資料時發生錯誤，請稍後再試');
+                    alert('載入電商資料時發生錯誤，請稍後再試');
                 });
         }
     </script>

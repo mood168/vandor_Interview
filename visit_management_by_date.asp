@@ -71,7 +71,7 @@ Set rs = conn.Execute(sql)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訪廠紀錄查詢</title>
+    <title>電商訪談紀錄查詢</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/visit_management.css">
     <style>
@@ -146,15 +146,15 @@ Set rs = conn.Execute(sql)
             </header>
 
             <div class="content">
-                <h1>訪廠紀錄查詢</h1>
+                <h1>電商訪談紀錄查詢</h1>
                 
                 <div class="visits-table-container">
                     <table class="visits-table">
                         <thead>
-                            <tr>
-                                <th>公司名稱</th>
+                            <tr>                                
                                 <th>母代號</th>
                                 <th>子代號</th>
+                                <th>公司名稱</th>
                                 <th>訪廠人員</th>
                                 <th>受訪人</th>
                                 <th>訪廠日期</th>
@@ -165,10 +165,10 @@ Set rs = conn.Execute(sql)
                         </thead>
                         <tbody>
                             <% Do While Not rs.EOF %>
-                                <tr data-visitor-id="<%=rs("VisitorID")%>">
-                                    <td><%=rs("CompanyName")%></td>
+                                <tr data-visitor-id="<%=rs("VisitorID")%>">                                   
                                     <td><%=rs("ParentCode")%></td>
                                     <td><%=rs("ChildCode")%></td>
+                                     <td><%=rs("CompanyName")%></td>
                                     <td><%=rs("VisitorName")%></td>
                                     <td><%=rs("Interviewee")%></td>
                                     <td><%=FormatDateYMD(rs("VisitDate"))%></td>
