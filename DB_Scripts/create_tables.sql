@@ -11,7 +11,8 @@ CREATE TABLE [dbo].[Users](
     [IsActive] [bit] DEFAULT 1,
     [LastLoginTime] [datetime] NULL,
     [CreatedDate] [datetime] DEFAULT GETDATE(),
-    [ModifiedDate] [datetime] DEFAULT GETDATE()
+    [ModifiedDate] [datetime] DEFAULT GETDATE(),
+    [LastPasswordChangeDate] [datetime] DEFAULT GETDATE()
 )
 GO
 

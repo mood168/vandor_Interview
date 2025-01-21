@@ -41,7 +41,7 @@ BEGIN
             u.FullName,
             u.UserRole,
 			u.IsActive,
-            u.ModifiedDate,
+            u.LastPasswordChangeDate,
             @LoginStatus AS LoginStatus,
             @LoginMessage AS LoginMessage
         FROM Users u
@@ -60,7 +60,7 @@ BEGIN
             NULL AS FullName,
             NULL AS UserRole,
 			NULL AS IsActive,
-            NULL AS ModifiedDate,
+            NULL AS LastPasswordChangeDate,
             @LoginStatus AS LoginStatus,
             @LoginMessage AS LoginMessage
     END
