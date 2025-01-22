@@ -42,7 +42,7 @@ Set basicInfo = rs
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Service 完整訪廠記錄表</title>
+    <title>E-Service 完整電商訪談記錄表</title>
     <style>
         body {
             font-family: Arial, "Microsoft JhengHei", sans-serif;
@@ -142,7 +142,7 @@ Set basicInfo = rs
     
     <div class="container">
         <div class="header">
-            <h1>E-Service 完整訪廠記錄表</h1>
+            <h1>E-Service 完整電商訪談表</h1>
         </div>
 
         <div class="company-info">            

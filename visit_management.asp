@@ -89,7 +89,7 @@ Set rs = conn.Execute(sql)
             </header>
 
             <div class="content">
-                <h1>電商訪談系統管理</h1>
+                <h1>電商訪談表管理</h1>
                 
                 <div class="visits-table-container">
                     <table class="visits-table">
@@ -98,9 +98,9 @@ Set rs = conn.Execute(sql)
                                 <th>母代號</th>
                                 <th>子代號</th>
                                 <th>公司名稱</th>
-                                <th>訪廠人員</th>
+                                <th>訪談人員</th>
                                 <th>受訪人</th>
-                                <th>訪廠日期</th>
+                                <th>訪談日期</th>
                                 <th>最後更新</th>
                                 <th>狀態</th>
                                 <th>操作</th>
@@ -125,9 +125,9 @@ Set rs = conn.Execute(sql)
                                         <a href="visit_questions.asp?vendor=<%=rs("CompanyName")%>" 
                                            class="edit-btn">編輯</a>
                                         <a href="print_visit.asp?id=<%=rs("VisitID")%>" 
-                                           class="edit-btn" target="_blank">訪廠紀錄表</a>
+                                           class="edit-btn" target="_blank">電商訪談表</a>
                                         <a href="full_visit_records_by_date_range.asp?id=<%=rs("visitorID")%>" 
-                                           class="edit-btn" target="_blank">完整紀錄表</a>
+                                           class="edit-btn" target="_blank">完整訪談紀錄表</a>
                                     </td>
                                 </tr>
                             <% 

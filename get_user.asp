@@ -24,7 +24,7 @@ On Error Resume Next
 
 ' 取得使用者資料
 Dim sql
-sql = "SELECT * FROM Users WHERE UserID = " & CLng(userId)
+sql = "SELECT UserID, Username, FullName, Phone, Email, Department, UserRole, IsActive, LastPasswordChangeDate FROM Users WHERE UserID = " & CLng(userId)
 
 Dim rs
 Set rs = conn.Execute(sql)
@@ -44,7 +44,8 @@ If Not rs.EOF Then
                    """Email"":""" & rs("Email") & """," & _
                    """Department"":""" & rs("Department") & """," & _
                    """UserRole"":""" & rs("UserRole") & """," & _
-                   """IsActive"":" & LCase(rs("IsActive")) & "}"
+                   """IsActive"":" & LCase(rs("IsActive")) & "," & _
+                   """LastPasswordChangeDate"":""" & rs("LastPasswordChangeDate") & """}"
 Else
     Response.Write "{""success"":false,""message"":""找不到使用者資料""}"
 End If

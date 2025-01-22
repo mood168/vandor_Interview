@@ -52,7 +52,7 @@ Set rsAnswers = conn.Execute(sqlAnswers)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Service 訪廠資料表</title>
+    <title>E-Service 電商訪談表</title>
     <style>
         body {
             font-family: Arial, "Microsoft JhengHei", sans-serif;
@@ -150,7 +150,7 @@ Set rsAnswers = conn.Execute(sqlAnswers)
     
     <div class="container">
         <div class="header">
-            <h1>E-Service 訪廠資料表</h1>
+            <h1>E-Service 電商訪談表</h1>
             <div class="visit-date">
                 拜訪日期：<%=FormatDateTime(rs("VisitDate"),2)%>
             </div>
