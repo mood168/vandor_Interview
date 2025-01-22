@@ -150,6 +150,9 @@ End If
             margin: 5px;
             padding: 4px 8px;
             border: 1px solid transparent; /* 預設透明邊框 */
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         /* 確保輸入框和標籤在同一行 */
@@ -163,11 +166,42 @@ End If
         /* 百分比輸入框的特定樣式 */
         .percentage-input {
             width: 60px !important;
+            margin: 0 5px !important;
+            padding: 4px 8px !important;
+            border: 1px solid #ccc !important;
+            border-radius: 4px !important;
+            text-align: right !important;
         }
 
         /* 金額輸入框的特定樣式 */
         .amount-input {
             width: 100px !important;
+            margin: 0 5px !important;
+            padding: 4px 8px !important;
+            border: 1px solid #ccc !important;
+            border-radius: 4px !important;
+            text-align: right !important;
+        }
+
+        /* 輸入框的單位標籤 */
+        .input-unit {
+            margin-left: -25px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 輸入框的 hover 效果 */
+        .percentage-input:hover,
+        .amount-input:hover {
+            border-color: #4a90e2 !important;
+        }
+
+        /* 輸入框的 focus 效果 */
+        .percentage-input:focus,
+        .amount-input:focus {
+            border-color: #4a90e2 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2) !important;
         }
 
         /* 在 visit_questions.asp 的 <style> 區塊中加入 */
@@ -367,24 +401,27 @@ End If
                                                             For Each opt in checkOptions 
                                                                 opt = Replace(Replace(opt, """", ""), " ", "")
                                                         %>
-                                                            <label class="checkbox-label" style="display: inline-block;">
-                                                                <input type="checkbox" name="q_<%=questionId%>" 
-                                                                    value="<%=opt%>">
+                                                            <label class="checkbox-label">
+                                                                <input type="checkbox" name="q_<%=questionId%>" value="<%=opt%>">
                                                                 <span><%=opt%></span>
                                                                 <% 
-                                                                If hasPercentage And InStr(opt, "佔") > 0 Then 
-                                                                    Dim inputName
-                                                                    If InStr(opt, ",") > 0 Then
-                                                                        ' 處理有金額的選項
-                                                                        Response.Write "<input type='number' class='amount-input' " & _
-                                                                                    "name='q_" & questionId & "_amount_" & opt & "' " & _
-                                                                                    "placeholder='元'>"
-                                                                    End If
+                                                                If hasPercentage Then
+                                                                    If InStr(opt, "佔") > 0 Then 
                                                                 %>
-                                                                    <input type="number" class="percentage-input" 
-                                                                        name="q_<%=questionId%>_percent_<%=opt%>" 
-                                                                        min="0" max="100" placeholder="%">
-                                                                <% End If %>
+                                                                    <div class="input-group">
+                                                                        <input type="number" class="percentage-input" 
+                                                                            name="q_<%=questionId%>_percent_<%=opt%>" 
+                                                                            min="0" max="100" placeholder="%">
+                                                                        <span class="input-unit">%</span>
+                                                                        <input type="number" class="amount-input"
+                                                                            name="q_<%=questionId%>_amount_<%=opt%>"
+                                                                            min="0" placeholder="元">
+                                                                        <span class="input-unit">元</span>
+                                                                    </div>
+                                                                <%
+                                                                    End If
+                                                                End If
+                                                                %>
                                                             </label>
                                                         <% Next %>
                                                     </div>
@@ -665,15 +702,16 @@ End If
                         // 檢查是否有百分比和金額輸入
                         const percentInput = questionContainer.querySelector(`[name="q_${questionId}_percent_${box.value}"]`);
                         const amountInput = questionContainer.querySelector(`[name="q_${questionId}_amount_${box.value}"]`);
+                        
                         if (percentInput && percentInput.value) {
-                            value += `${percentInput.value.replace('%', '')}%`;
+                            value += `${percentInput.value}%`;
                         }
                         if (amountInput && amountInput.value) {
-                            value += `${amountInput.value.replace('%', '')}元`;
+                            value += `,${amountInput.value}元`;
                         }
                         answers.push(value);
                     });
-                    answer = answers.join(',');
+                    answer = answers.join('|');
                 } else {
                     answer = inputElement.value;
                 }
@@ -782,11 +820,11 @@ End If
                                     value += `${percentInput.value}%`;
                                 }
                                 if (amountInput && amountInput.value) {
-                                    value += `${amountInput.value}元`;
+                                    value += `,${amountInput.value}元`;
                                 }
                                 answers.push(value);
                             });
-                            answer = answers.join(',');
+                            answer = answers.join('|');
                         } else {
                             answer = inputElement.value;
                         }

@@ -215,7 +215,20 @@ Set rsAnswers = conn.Execute(sqlAnswers)
         %>
                         <tr>
                             <td><%=rsAnswers("QuestionText")%></td>
-                            <td><%=rsAnswers("Answer")%></td>
+                            <td><%
+                                Dim answer
+                                answer = rsAnswers("Answer")
+                                If InStr(answer, "|") > 0 Then
+                                    ' 處理多選答案
+                                    Dim answers
+                                    answers = Split(answer, "|")
+                                    For Each ans in answers
+                                        Response.Write Replace(ans, ",", " - ") & "<br>"
+                                    Next
+                                Else
+                                    Response.Write answer
+                                End If
+                            %></td>
                         </tr>
         <%
             rsAnswers.MoveNext
