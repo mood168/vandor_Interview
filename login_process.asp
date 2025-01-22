@@ -1,5 +1,6 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
+<!--#include file="2D34D3E4/crypt.asp"-->
 <%
 
 Response.CharSet = "utf-8"
@@ -38,8 +39,8 @@ cmd.CommandType = 4 ' adCmdStoredProc
 cmd.CommandText = "sp_UserLogin"
 
 ' 設定參數
-cmd.Parameters.Append cmd.CreateParameter("@Username", 200, 1, 500, SimpleEncrypt(username))
-cmd.Parameters.Append cmd.CreateParameter("@Password", 200, 1, 500, SimpleEncrypt(password))
+cmd.Parameters.Append cmd.CreateParameter("@Username", 200, 1, 500, Encrypt(username, aesKey, macKey))
+cmd.Parameters.Append cmd.CreateParameter("@Password", 200, 1, 500, Encrypt(password, aesKey, macKey))
 cmd.Parameters.Append cmd.CreateParameter("@LoginIP", 200, 1, 50, userIP)
 
 ' 執行預存程序
@@ -69,7 +70,7 @@ If Not rs.EOF Then
         
         ' 登入成功，設定 Session
         Session("UserID") = rs("UserID")
-        Session("Username") = SimpleDecrypt(rs("Username"))
+        Session("Username") = Decrypt(rs("Username"), aesKey, macKey)
         Session("FullName") = rs("FullName")
         Session("UserRole") = rs("UserRole")
         Session("IsActive") = rs("IsActive")
@@ -97,35 +98,6 @@ If Not rs Is Nothing Then
 End If
 Set cmd = Nothing
 
-
-Function SimpleEncrypt(inputText)
-    Dim i, charCode
-    Dim encryptedText
-    encryptedText = ""
-    
-    For i = 1 To Len(inputText)
-        charCode = AscW(Mid(inputText, i, 1))
-        charCode = charCode + 3 ' 將字符碼增加1（可以根據需要調整）
-        encryptedText = encryptedText & ChrW(charCode)
-    Next
-    
-    SimpleEncrypt = encryptedText
-End Function
-
-' 簡單的字符替換解密函數
-Function SimpleDecrypt(encryptedText)
-    Dim i, charCode
-    Dim decryptedText
-    decryptedText = ""
-    
-    For i = 1 To Len(encryptedText)
-        charCode = AscW(Mid(encryptedText, i, 1))
-        charCode = charCode - 3 ' 將字符碼減少1（必須與加密時相反）
-        decryptedText = decryptedText & ChrW(charCode)
-    Next
-    
-    SimpleDecrypt = decryptedText
-End Function
 
 Function IsPasswordValid(password)
     ' 檢查密碼規則：至少6位,必須包含大小寫字母和數字

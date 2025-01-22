@@ -1,5 +1,6 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
+<!--#include file="2D34D3E4/crypt.asp"-->
 <%
 Response.CharSet = "utf-8"
 
@@ -41,7 +42,7 @@ cmd.CommandType = 4 ' adCmdStoredProc
 cmd.CommandText = "sp_CheckCurrentPassword"
 
 cmd.Parameters.Append cmd.CreateParameter("@UserID", 3, 1, , Session("UserID"))
-cmd.Parameters.Append cmd.CreateParameter("@CurrentPassword", 200, 1, 500, SimpleEncrypt(currentPassword))
+cmd.Parameters.Append cmd.CreateParameter("@CurrentPassword", 200, 1, 500, Encrypt(currentPassword, aesKey, macKey))
 
 Set rs = cmd.Execute
 
@@ -52,7 +53,7 @@ End If
 
 ' 更新密碼
 cmd.CommandText = "sp_UpdatePassword"
-cmd.Parameters.Append cmd.CreateParameter("@NewPassword", 200, 1, 500, SimpleEncrypt(newPassword))
+cmd.Parameters.Append cmd.CreateParameter("@NewPassword", 200, 1, 500, Encrypt(newPassword, aesKey, macKey))
 
 cmd.Execute
 
@@ -82,34 +83,5 @@ Function IsPasswordValid(password)
     passwordRegex.Pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$"
     IsPasswordValid = passwordRegex.Test(password)
     Set passwordRegex = Nothing
-End Function
-
-Function SimpleEncrypt(inputText)
-    Dim i, charCode
-    Dim encryptedText
-    encryptedText = ""
-    
-    For i = 1 To Len(inputText)
-        charCode = AscW(Mid(inputText, i, 1))
-        charCode = charCode + 3 ' 將字符碼增加1（可以根據需要調整）
-        encryptedText = encryptedText & ChrW(charCode)
-    Next
-    
-    SimpleEncrypt = encryptedText
-End Function
-
-' 簡單的字符替換解密函數
-Function SimpleDecrypt(encryptedText)
-    Dim i, charCode
-    Dim decryptedText
-    decryptedText = ""
-    
-    For i = 1 To Len(encryptedText)
-        charCode = AscW(Mid(encryptedText, i, 1))
-        charCode = charCode - 3 ' 將字符碼減少1（必須與加密時相反）
-        decryptedText = decryptedText & ChrW(charCode)
-    Next
-    
-    SimpleDecrypt = decryptedText
 End Function
 %> 

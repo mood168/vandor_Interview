@@ -1,13 +1,14 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
+<!--#include file="2D34D3E4/crypt.asp"-->
 <%
 Dim rs    
     Set rs = Server.CreateObject("ADODB.Recordset")
     rs.Open "SELECT UserID, Username, Password FROM dbo.Users", conn, 1, 3
     
     Do While Not rs.EOF
-        rs("Username") = SimpleEncrypt(rs("Username"))
-        rs("Password") = SimpleEncrypt(rs("Password"))
+        rs("Username") = Encrypt(SimpleDecrypt(rs("Username")), aesKey, macKey)
+        rs("Password") = Encrypt(SimpleDecrypt(rs("Password")), aesKey, macKey)
         rs.Update
         rs.MoveNext
     Loop

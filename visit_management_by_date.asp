@@ -59,7 +59,9 @@ If endDate <> "" Then
     sql = sql & " AND vr.VisitDate <= '" & endDate & "'"
 End If
 
-sql = sql & " ) SELECT * FROM RankedVisits WHERE RowNum = 1 ORDER BY VisitDate DESC"
+sql = sql & " ) SELECT VisitorID, VisitID, CompanyName, ParentCode, ChildCode, " & _
+            "       Interviewee, VisitDate, Status, VisitorName, LastAnswerDate " & _
+            "FROM RankedVisits WHERE RowNum = 1 ORDER BY VisitDate DESC"
 
 ' 執行查詢
 Dim rs

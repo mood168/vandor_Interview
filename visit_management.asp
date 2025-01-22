@@ -37,7 +37,9 @@ sql = "WITH RankedVisits AS ( " & _
       "    LEFT JOIN Users u ON vr.VisitorID = u.UserID " & _
       "    LEFT JOIN Vendors v ON vr.CompanyName = v.VendorName " & _
       ") " & _
-      "SELECT * FROM RankedVisits WHERE RowNum = 1 " & _
+      "SELECT VisitorID, VisitID, CompanyName, ParentCode, ChildCode, " & _
+      "       Interviewee, VisitDate, Status, VisitorName, LastAnswerDate " & _
+      "FROM RankedVisits WHERE RowNum = 1 " & _
       "ORDER BY VisitDate DESC"
 
 Dim rs

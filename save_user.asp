@@ -1,5 +1,6 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
+<!--#include file="2D34D3E4/crypt.asp"-->
 <meta charset="UTF-8">
 <%
 Response.Clear
@@ -38,8 +39,8 @@ Dim sql
 If userId = "" Then
     ' 新增使用者
     sql = "INSERT INTO Users (Username, Password, FullName, Phone, Email, Department, UserRole, IsActive, LastPasswordChangeDate) VALUES (" & _
-          SafeSQL(SimpleEncrypt(username)) & ", " & _
-          SafeSQL(SimpleEncrypt(password)) & ", " & _
+          SafeSQL(Encrypt(username, aesKey, macKey)) & ", " & _
+          SafeSQL(Encrypt(password, aesKey, macKey)) & ", " & _
           SafeSQL(fullName) & ", " & _
           SafeSQL(phone) & ", " & _
           SafeSQL(email) & ", " & _
@@ -49,8 +50,8 @@ If userId = "" Then
 Else
     ' 更新使用者
     sql = "UPDATE Users SET " & _
-          "Username = " & SafeSQL(SimpleEncrypt(username)) & ", " & _
-          "Password = " & SafeSQL(SimpleEncrypt(password)) & ", " & _
+          "Username = " & SafeSQL(Encrypt(username, aesKey, macKey)) & ", " & _
+          "Password = " & SafeSQL(Encrypt(password, aesKey, macKey)) & ", " & _
           "FullName = " & SafeSQL(fullName) & ", " & _
           "Phone = " & SafeSQL(phone) & ", " & _
           "Email = " & SafeSQL(email) & ", " & _
@@ -74,35 +75,6 @@ End If
 
 conn.Close
 Set conn = Nothing
-
-Function SimpleEncrypt(inputText)
-    Dim i, charCode
-    Dim encryptedText
-    encryptedText = ""
-    
-    For i = 1 To Len(inputText)
-        charCode = AscW(Mid(inputText, i, 1))
-        charCode = charCode + 3 ' 將字符碼增加1（可以根據需要調整）
-        encryptedText = encryptedText & ChrW(charCode)
-    Next
-    
-    SimpleEncrypt = encryptedText
-End Function
-
-' 簡單的字符替換解密函數
-Function SimpleDecrypt(encryptedText)
-    Dim i, charCode
-    Dim decryptedText
-    decryptedText = ""
-    
-    For i = 1 To Len(encryptedText)
-        charCode = AscW(Mid(encryptedText, i, 1))
-        charCode = charCode - 3 ' 將字符碼減少1（必須與加密時相反）
-        decryptedText = decryptedText & ChrW(charCode)
-    Next
-    
-    SimpleDecrypt = decryptedText
-End Function
 
 Function IsPasswordValid(password)
     ' 檢查密碼規則：至少6位,必須包含大小寫字母和數字

@@ -1,5 +1,6 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <!--#include file="2D34D3E4/db.asp"-->
+<!--#include file="2D34D3E4/crypt.asp"-->
 <%
 Response.CharSet = "utf-8"
 
@@ -17,7 +18,7 @@ End If
 
 ' 取得使用者列表
 Dim rsUsers
-Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
+Set rsUsers = conn.Execute("SELECT UserID, Username, FullName, Department, Phone, Email, UserRole, IsActive, CreatedDate FROM Users ORDER BY CreatedDate DESC")
 %>
 
 <!DOCTYPE html>
@@ -64,7 +65,7 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
                         <tbody>
                             <% Do While Not rsUsers.EOF %>
                                 <tr>
-                                    <td><%=SimpleDecrypt(rsUsers("Username"))%></td>
+                                    <td><%=Decrypt(rsUsers("Username"), aesKey, macKey)%></td>
                                     <td><%=rsUsers("FullName")%></td>
                                     <td><%=rsUsers("Department")%></td>
                                     <td><%=rsUsers("Phone")%></td>
@@ -281,34 +282,3 @@ Set rsUsers = conn.Execute("SELECT * FROM Users ORDER BY CreatedDate DESC")
     </script>
 </body>
 </html> 
-
-<%
-Function SimpleEncrypt(inputText)
-    Dim i, charCode
-    Dim encryptedText
-    encryptedText = ""
-    
-    For i = 1 To Len(inputText)
-        charCode = AscW(Mid(inputText, i, 1))
-        charCode = charCode + 3 ' 將字符碼增加1（可以根據需要調整）
-        encryptedText = encryptedText & ChrW(charCode)
-    Next
-    
-    SimpleEncrypt = encryptedText
-End Function
-
-' 簡單的字符替換解密函數
-Function SimpleDecrypt(encryptedText)
-    Dim i, charCode
-    Dim decryptedText
-    decryptedText = ""
-    
-    For i = 1 To Len(encryptedText)
-        charCode = AscW(Mid(encryptedText, i, 1))
-        charCode = charCode - 3 ' 將字符碼減少1（必須與加密時相反）
-        decryptedText = decryptedText & ChrW(charCode)
-    Next
-    
-    SimpleDecrypt = decryptedText
-End Function
-%>

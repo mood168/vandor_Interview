@@ -13,7 +13,7 @@ On Error Resume Next
 
 ' 取得所有分類和問題
 Dim rsCategories
-Set rsCategories = conn.Execute("SELECT * FROM QuestionCategories ORDER BY SortOrder")
+Set rsCategories = conn.Execute("SELECT CategoryID, CategoryName, SortOrder FROM QuestionCategories ORDER BY SortOrder")
 
 If Err.Number <> 0 Then
     Response.Write "資料庫錯誤: " & Err.Description
@@ -259,7 +259,7 @@ End If
                                 <div class="questions">
                                     <% 
                                     Dim rsQuestions
-                                    Set rsQuestions = conn.Execute("SELECT * FROM VisitQuestions WHERE CategoryID = " & categoryID & " ORDER BY SortOrder")
+                                    Set rsQuestions = conn.Execute("SELECT QuestionID, QuestionText, AnswerType, HasOptions, Options, HasPercentage, IsRequired, SortOrder FROM VisitQuestions WHERE CategoryID = " & categoryID & " ORDER BY SortOrder")
                                     
                                     Do While Not rsQuestions.EOF 
                                         Dim questionText, questionId, answerType, hasOptions, options, hasPercentage

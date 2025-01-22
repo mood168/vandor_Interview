@@ -11,7 +11,7 @@ End If
 
 ' 取得電商列表
 Dim rsVendors
-Set rsVendors = conn.Execute("SELECT * FROM Vendors ORDER BY IsActive DESC, CreatedDate DESC")
+Set rsVendors = conn.Execute("SELECT VendorID, ParentCode, ChildCode, UniformNumber, VendorName, ContactPerson, Phone, Address, IsActive, CreatedDate FROM Vendors ORDER BY IsActive DESC, CreatedDate DESC")
 %>
 
 <!DOCTYPE html>
