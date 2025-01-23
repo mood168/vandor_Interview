@@ -65,12 +65,54 @@ Set rsUsers = conn.Execute("SELECT UserID, Username, FullName, Department, Phone
                         <tbody>
                             <% Do While Not rsUsers.EOF %>
                                 <tr>
-                                    <td><%=Decrypt(rsUsers("Username"), aesKey, macKey)%></td>
-                                    <td><%=rsUsers("FullName")%></td>
-                                    <td><%=rsUsers("Department")%></td>
-                                    <td><%=rsUsers("Phone")%></td>
-                                    <td><%=rsUsers("Email")%></td>
-                                    <td><%=rsUsers("UserRole")%></td>
+                                    <td><%
+                                    Dim username
+                                    username = Decrypt(rsUsers("Username"), aesKey, macKey)
+                                    If Len(username) > 4 Then
+                                        Response.Write(Left(username, 4) & String(Len(username)-4, "*"))
+                                    Else
+                                        Response.Write(username)
+                                    End If
+                                    %></td>
+                                    <td><%
+                                    Dim fullname
+                                    fullname = rsUsers("FullName")
+                                    For i = 1 To Len(fullname)
+                                        If i Mod 2 = 0 And AscW(Mid(fullname,i,1)) > 255 Then
+                                            Response.Write("*")
+                                        Else
+                                            Response.Write(Mid(fullname,i,1))
+                                        End If
+                                    Next
+                                    %></td>
+                                    <td><%= rsUsers("Department")%></td>
+                                    <td><%
+                                    Dim phone
+                                    phone = rsUsers("Phone")
+                                    If Len(phone) > 4 Then
+                                        Response.Write(Left(phone, 4) & String(Len(phone)-4, "*"))
+                                    Else
+                                        Response.Write(phone)
+                                    End If
+                                    %></td>
+                                    <td><%
+                                    Dim email
+                                    email = rsUsers("Email")
+                                    If Len(email) > 4 Then
+                                        Response.Write(Left(email, 4) & String(Len(email)-4, "*"))
+                                    Else
+                                        Response.Write(email)
+                                    End If
+                                    %></td>
+                                    <td><%
+                                    Dim role
+                                    role = rsUsers("UserRole")
+                                    If Len(role) > 4 Then
+                                        Response.Write(Left(role, 4) & String(Len(role)-4, "*"))
+                                    Else
+                                        Response.Write(role)
+                                    End If
+                                    %></td>
                                     <td>
                                         <span class="status-badge <%
                                         If rsUsers("IsActive") Then

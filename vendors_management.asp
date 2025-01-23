@@ -93,11 +93,72 @@ Set rsVendors = conn.Execute("SELECT VendorID, ParentCode, ChildCode, UniformNum
                                 <tr class="<% If Not rsVendors("IsActive") Then Response.Write "inactive" %>">
                                     <td><%=rsVendors("ParentCode")%></td>
                                     <td><%=rsVendors("ChildCode")%></td>
-                                    <td><%=rsVendors("UniformNumber")%></td>
-                                    <td><%=rsVendors("VendorName")%></td>
-                                    <td><%=rsVendors("ContactPerson")%></td>
-                                    <td><%=rsVendors("Phone")%></td>
-                                    <td><%=rsVendors("Address")%></td>
+                                    <td><%
+                                        Dim uniformNum: uniformNum = rsVendors("UniformNumber")
+                                        If Len(uniformNum) > 4 Then
+                                            Response.Write Left(uniformNum,4) & String(Len(uniformNum)-4,"*")
+                                        Else
+                                            Response.Write uniformNum
+                                        End If
+                                    %></td>
+                                    <td><%
+                                        Dim vendorName: vendorName = rsVendors("VendorName")
+                                        If Len(vendorName) > 1 Then
+                                            If Asc(Left(vendorName,1)) > 255 Then
+                                                ' Chinese characters
+                                                Response.Write Left(vendorName,1) & "*" & Right(vendorName,Len(vendorName)-2)
+                                            Else
+                                                ' English characters
+                                                If Len(vendorName) > 4 Then
+                                                    Response.Write Left(vendorName,4) & String(Len(vendorName)-4,"*") 
+                                                Else
+                                                    Response.Write vendorName
+                                                End If
+                                            End If
+                                        Else
+                                            Response.Write vendorName
+                                        End If
+                                    %></td>
+                                    <td><%
+                                        Dim contactPerson: contactPerson = rsVendors("ContactPerson") 
+                                        If Asc(Left(contactPerson,1)) > 255 Then
+                                            ' Chinese characters
+                                            Response.Write Left(contactPerson,1) & "*" & Right(contactPerson,Len(contactPerson)-2)
+                                        Else
+                                            ' English characters
+                                            If Len(contactPerson) > 2 Then
+                                                Response.Write Left(contactPerson,2) & String(Len(contactPerson)-2,"*")
+                                            Else
+                                                Response.Write contactPerson
+                                            End If
+                                        End If
+                                    %></td>
+                                    <td><%
+                                        Dim phone: phone = rsVendors("Phone")
+                                        If Len(phone) > 4 Then
+                                            Response.Write Left(phone,4) & String(Len(phone)-4,"*")
+                                        Else
+                                            Response.Write phone
+                                        End If
+                                    %></td>
+                                    <td><%
+                                        Dim addr: addr = rsVendors("Address")
+                                        If Len(addr) > 1 Then
+                                            If Asc(Left(addr,1)) > 255 Then
+                                                ' Chinese characters
+                                                Response.Write Left(addr,1) & "*" & Right(addr,Len(addr)-2)
+                                            Else
+                                                ' English characters
+                                                If Len(addr) > 4 Then
+                                                    Response.Write Left(addr,4) & String(Len(addr)-4,"*")
+                                                Else
+                                                    Response.Write addr
+                                                End If
+                                            End If
+                                        Else
+                                            Response.Write addr
+                                        End If
+                                    %></td>
                                     <td class="actions">
                                         
                                         
