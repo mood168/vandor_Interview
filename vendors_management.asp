@@ -19,7 +19,7 @@ Set rsVendors = conn.Execute("SELECT VendorID, ParentCode, ChildCode, UniformNum
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電商訪談電商管理</title>
+    <title>訪談電商管理</title>
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/vendors_management.css">
 </head>
